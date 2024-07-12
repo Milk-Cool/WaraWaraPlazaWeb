@@ -18,7 +18,7 @@ export async function getWaraWaraData() {
         delete topic.is_recommended;
         delete topic.position;
 
-        topic.icon = zlib.inflateSync(Buffer.from(topic.icon, "base64"));
+        topic.icon = zlib.inflateSync(Buffer.from(topic.icon, "base64")).toString("base64");
         
         topic.people = topic.people.person.map(person => person.posts.post);
         topic.people = topic.people.map(person => {
@@ -28,6 +28,9 @@ export async function getWaraWaraData() {
             delete person.is_spoiler;
             delete person.is_app_jumpable;
             delete person.platform_id;
+
+            if(typeof person.painting !== "undefined")
+                person.painting = person.painting.url;
 
             return person;
         });

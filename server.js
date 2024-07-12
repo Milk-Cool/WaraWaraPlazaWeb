@@ -1,5 +1,11 @@
 import { getWaraWaraData } from "./index.js";
+import express from "express";
 
-(async () => {
-    console.log(await getWaraWaraData());
-})();
+const app = express();
+
+app.get("/data", async (_req, res) => {
+    const data = await getWaraWaraData();
+    res.status(200).send(data);
+});
+
+app.listen(8062);
