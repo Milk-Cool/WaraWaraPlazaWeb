@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "postinstall": "cd node_modules/@pretendonetwork/mii-js && npm i --include=dev && npx tsc && npx tsc-alias && npm run copy-files && cd ../../..",
     "start": "node server.js"
   },
   "repository": {
@@ -24,6 +25,7 @@
   },
   "homepage": "https://github.com/Milk-Cool/WaraWaraPlazaWeb#readme",
   "dependencies": {
+    "@pretendonetwork/mii-js": "github:PretendoNetwork/mii-js",
     "express": "^4.19.2",
     "fast-xml-parser": "^4.4.0",
     "tga2png": "^0.1.3"
