@@ -8,4 +8,6 @@ app.get("/data", async (_req, res) => {
     res.status(200).send(data);
 });
 
+app.use(express.static("html"));
+
 app.listen(8062);
