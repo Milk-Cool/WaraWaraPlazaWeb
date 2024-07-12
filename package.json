@@ -1,0 +1,29 @@
+{
+  "name": "warawaraplazaweb",
+  "version": "0.1.0",
+  "description": "Displays the WaraWara Plaza (from Pretendo servers) in your browser",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Milk-Cool/WaraWaraPlazaWeb.git"
+  },
+  "keywords": [
+    "warawara",
+    "plaza",
+    "pretendo",
+    "web"
+  ],
+  "author": "Milk_Cool",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Milk-Cool/WaraWaraPlazaWeb/issues"
+  },
+  "homepage": "https://github.com/Milk-Cool/WaraWaraPlazaWeb#readme",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
