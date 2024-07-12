@@ -1,5 +1,5 @@
 import { XMLParser } from "fast-xml-parser";
-import Mii from "@pretendonetwork/mii-js";
+import miiJS from "@pretendonetwork/mii-js";
 import tga2png from "tga2png";
 import fs from "fs";
 import zlib from "zlib";
@@ -28,6 +28,36 @@ export async function getWaraWaraData() {
             delete person.is_spoiler;
             delete person.is_app_jumpable;
             delete person.platform_id;
+
+            // ugh i hate this line so much
+            const mii = new miiJS.default(Buffer.from(person.mii, "base64"));
+            person.mii = JSON.parse(JSON.stringify(mii));
+            
+            delete person.mii.bitStream;
+            delete person.mii.systemId;
+            delete person.mii.consoleMAC;
+            delete person.mii.version;
+            delete person.mii.profanityFlag;
+            delete person.mii.allowCopying;
+            delete person.mii.regionLock;
+            delete person.mii.characterSet;
+            delete person.mii.pageIndex;
+            delete person.mii.slotIndex;
+            delete person.mii.unknown1;
+            delete person.mii.deviceOrigin;
+            delete person.mii.normalMii;
+            delete person.mii.dsMii;
+            delete person.mii.nonUserMii;
+            delete person.mii.creationTime;
+            delete person.mii.birthMonth;
+            delete person.mii.birthDay;
+            delete person.mii.favorite;
+            delete person.mii.miiName;
+            delete person.mii.disableSharing;
+            delete person.mii.unknown2;
+            delete person.mii.creatorName;
+            delete person.mii.checksum;
+            delete person.mii.isValid;
 
             if(typeof person.painting !== "undefined")
                 person.painting = person.painting.url;
