@@ -1,0 +1,1 @@
+import { getWaraWaraData } from "./index.js";
