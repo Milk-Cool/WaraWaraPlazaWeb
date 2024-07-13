@@ -294,7 +294,7 @@ waitForData().then(() => {
     for(let i = 0; i < positions.length; i++) {
         if(!data[i]?.icon) continue;
         tgaLoader.load("data:application/octet-stream;base64," + data[i].icon, tga => {
-            const iconPlane = RoundedRectangle(2.2, 2.2, .4, 18);
+            const iconPlane = RoundedRectangle(2.5, 2.5, .5, 18);
             const iconMaterial = new THREE.MeshPhongMaterial({
                 "map": tga,
                 "shading": THREE.FlatShading
