@@ -97,6 +97,51 @@ camera.position.z = 20;
 camera.position.y = 10;
 camera.rotation.x = -.5;
 
+// Controls
+const held = {
+    "left": false,
+    "right": false,
+    "forward": false,
+    "backward": false,
+    "zoom_in": false,
+    "zoom_out": false
+};
+const map = {
+    "ArrowLeft": "left",
+    "a": "left",
+    "ArrowUp": "forward",
+    "w": "forward",
+    "ArrowDown": "backward",
+    "s": "backward",
+    "ArrowRight": "right",
+    "d": "right",
+    "-": "zoom_out",
+    "_": "zoom_out",
+    ",": "zoom_out",
+    "+": "zoom_in",
+    "=": "zoom_in",
+    ".": "zoom_in",
+};
+document.addEventListener("keydown", e => {
+    const { key } = e;
+    const mapped = map[key];
+    held[mapped] = true;
+});
+document.addEventListener("keyup", e => {
+    const { key } = e;
+    const mapped = map[key];
+    held[mapped] = false;
+});
+setInterval(() => {
+    if(held.left) camera.position.x -= .1;
+    if(held.right) camera.position.x += .1;
+    if(held.forward) camera.position.z -= .1;
+    if(held.backward) camera.position.z += .1;
+    if(held.zoom_in) camera.fov -= .1;
+    if(held.zoom_out) camera.fov += .1;
+    camera.updateProjectionMatrix();
+}, 1);
+
 let data = null;
 fetch("/data").then(resp => resp.json()).then(json => data = json);
 const checkForData = resolve => {
