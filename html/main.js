@@ -351,6 +351,23 @@ const loadMii = (mii, pos, commid) => {
             miis[n].eyebrows[m++] = eyebrowMesh;
         }
     }, undefined, console.error);
+    imgLoader.load(`models/head/tex/tex_${347 + mii.noseType}.png`, img => {
+        let m = 0;
+        const scale = .1 * (1 + (mii.noseScale - 5) * 0.15);
+        const nosePlane = new THREE.PlaneGeometry(scale, scale, 1, 1);
+        const noseMaterial = new THREE.MeshPhongMaterial({
+            "map": colorCorrectBWA(img, 0, 0x000000ff),
+            "shading": THREE.FlatShading,
+            "transparent": true
+        });
+        const noseMesh = new THREE.Mesh(nosePlane, noseMaterial);
+        noseMesh.position.x = pos.x;
+        noseMesh.position.y = 1.4 - (mii.noseYPosition - 9) * 0.007;
+        noseMesh.position.z = pos.z + .2;
+        noseMesh.material.side = THREE.DoubleSide;
+        scene.add(noseMesh);
+        miis[n].nose = noseMesh;
+    }, undefined, console.error);
 }
 
 for(const position of positions) {
