@@ -312,7 +312,7 @@ waitForData().then(() => {
 
 const imgLoader = new THREE.TextureLoader();
 
-let i = -30;
+let i = -31;
 waitForData().then(() => {
     for(const comm of data)
         for(const person of comm.people)
