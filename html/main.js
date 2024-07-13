@@ -189,11 +189,10 @@ for(let _i = 0; _i < 10; _i++) {
 }
 
 /**
- * 
  * @param {THREE.Texture} img The source image
- * @param {THREE.ColorRepresentation} r The color to replace red parts with
- * @param {THREE.ColorRepresentation} g The color to replace green parts with
- * @param {THREE.ColorRepresentation} b The color to replace blue parts with
+ * @param {THREE.ColorRepresentation} r The color to replace red parts with (RGB)
+ * @param {THREE.ColorRepresentation} g The color to replace green parts with (RGB)
+ * @param {THREE.ColorRepresentation} b The color to replace blue parts with (RGB)
  * 
  * @returns {THREE.CanvasTexture} The resulting texture
  */
@@ -219,6 +218,43 @@ const colorCorrect = (img, r, g, b) => {
             (r % 256) * irgb[0]
             + (g % 256) * irgb[1]
             + (b % 256) * irgb[2];
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    canvas.remove();
+    return texture;
+}
+
+/**
+ * @param {THREE.Texture} img The source image
+ * @param {THREE.ColorRepresentation} b The color to replace black parts with (RGBA)
+ * @param {THREE.ColorRepresentation} w The color to replace white parts with (RGBA)
+ * 
+ * @returns {THREE.CanvasTexture} The resulting texture
+ */
+const colorCorrectBWA = (img, b, w) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = img.source.data.width;
+    canvas.height = img.source.data.height;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img.source.data, 0, 0);
+
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    for(let i = 0; i < imgData.data.length; i += 4) {
+        const gs = imgData.data.slice(i, i + 3).map(x => x / 256).reduce((a, b) => a + b, 0) / 3;
+        imgData.data[i] = 
+            (Math.floor(b / 16777216) % 256) * (1 - gs)
+            + (Math.floor(w / 16777216) % 256) * gs;
+        imgData.data[i + 1] = 
+            (Math.floor(b / 65536) % 256) * (1 - gs)
+            + (Math.floor(w / 65536) % 256) * gs;
+        imgData.data[i + 2] = 
+            (Math.floor(b / 256) % 256) * (1 - gs)
+            + (Math.floor(w / 256) % 256) * gs;
+        imgData.data[i + 3] =
+            (b % 256) * (1 - gs)
+            + (w % 256) * gs;
     }
     ctx.putImageData(imgData, 0, 0);
 
@@ -283,14 +319,36 @@ const loadMii = (mii, pos, commid) => {
             });
             const eyeMesh = new THREE.Mesh(eyePlane, eyeMaterial);
             eyeMesh.position.x = pos.x + i * (1 + mii.eyeSpacing * 0.27);
-            mii.eyeYPosition = 18;
-            eyeMesh.position.y = 1.5 - (mii.eyeYPosition - 12) * 0.007;
+            eyeMesh.position.y = 1.45 - (mii.eyeYPosition - 12) * 0.007;
             eyeMesh.position.z = pos.z + .2;
-            eyeMesh.rotation.z = (Math.PI / 15) * (mii.eyeRotation - 4);
+            eyeMesh.rotation.z = (-Math.PI / 15) * (mii.eyeRotation - 4);
             eyeMesh.material.side = THREE.DoubleSide;
             if(i > 0) eyeMesh.rotation.y = Math.PI;
             scene.add(eyeMesh);
             miis[n].eyes[m++] = eyeMesh;
+        }
+    }, undefined, console.error);
+    imgLoader.load(`models/head/tex/tex_${215 + mii.eyebrowType}.png`, img => {
+        let m = 0;
+        miis[n].eyebrows = [];
+        for(let i = -0.05; i <= 0.05; i += 0.1) {
+            const scale = .1 * (1 + (mii.eyebrowScale - 4) * 0.15);
+            const multSY = 1 + (mii.eyebrowVerticalStretch - 3) * 0.17;
+            const eyebrowPlane = new THREE.PlaneGeometry(scale, scale * multSY, 1, 1);
+            const eyebrowMaterial = new THREE.MeshPhongMaterial({
+                "map": colorCorrectBWA(img, 0, hairColors[mii.eyebrowColor] * 0x100 + 0xff),
+                "shading": THREE.FlatShading,
+                "transparent": true
+            });
+            const eyebrowMesh = new THREE.Mesh(eyebrowPlane, eyebrowMaterial);
+            eyebrowMesh.position.x = pos.x + i * (1 + mii.eyebrowSpacing * 0.27);
+            eyebrowMesh.position.y = 1.48 - (mii.eyebrowYPosition - 12) * 0.007;
+            eyebrowMesh.position.z = pos.z + .2;
+            eyebrowMesh.rotation.z = (-Math.PI / 15) * (mii.eyebrowRotation - 6);
+            eyebrowMesh.material.side = THREE.DoubleSide;
+            if(i > 0) eyebrowMesh.rotation.y = Math.PI;
+            scene.add(eyebrowMesh);
+            miis[n].eyebrows[m++] = eyebrowMesh;
         }
     }, undefined, console.error);
 }
