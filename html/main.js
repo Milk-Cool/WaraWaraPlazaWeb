@@ -65,7 +65,7 @@ for(let _i = 0; _i < 10; _i++) {
 
 for(const position of positions) {
     gltfLoader.load("models/community.gltf", gltf => {
-        gltf.scene.scale.set(.5, .5, .5);
+        gltf.scene.scale.set(.4, .4, .4);
         gltf.scene.position.x = position[0];
         gltf.scene.position.y = 5;
         gltf.scene.position.z = position[1];
@@ -76,6 +76,7 @@ for(const position of positions) {
         });
         for(const child of gltf.scene.children)
             child.material = material;
+        gltf.scene.rotation.y = Math.PI / 2;
         scene.add(gltf.scene);
         communities.push(gltf.scene);
     }, undefined, console.error);
@@ -87,7 +88,7 @@ waitForData().then(() => {
     for(let i = 0; i < positions.length; i++) {
         if(!data[i]?.icon) continue;
         tgaLoader.load("data:application/octet-stream;base64," + data[i].icon, tga => {
-            const iconPlane = new THREE.PlaneGeometry(2.6, 2.6, 1, 1);
+            const iconPlane = new THREE.PlaneGeometry(2, 2, 1, 1);
             const iconMaterial = new THREE.MeshPhongMaterial({
                 "map": tga,
                 "shading": THREE.FlatShading
@@ -105,11 +106,6 @@ waitForData().then(() => {
 
 let rot = 0;
 const animate = () => {
-    rot += .01;
-    for(const community of communities)
-        community.rotation.y = Math.PI / 2 + rot;
-    for(const icon of icons)
-        icon.rotation.y = rot;
 	renderer.render(scene, camera);
 }
 renderer.setAnimationLoop(animate);
