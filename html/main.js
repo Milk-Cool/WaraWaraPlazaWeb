@@ -87,6 +87,8 @@ function RoundedRectangle( w, h, r, s ) { // width, height, radius corner, smoot
 
 // ACTUAL CODE
 
+THREE.Cache.enabled = true;
+
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xE4EFED);
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -140,12 +142,23 @@ gltfLoader.load("models/body/Female.gltf", gltf => {
     miis.push(gltf.scene);
 }, undefined, console.error);
 let faceType = 0;
+let hairType = 0;
 gltfLoader.load(`models/head/mesh/shape_${268 + faceType}.glb`, gltf => {
     gltf.scene.scale.set(.008, .008, .008);
     gltf.scene.position.x = 0;
     gltf.scene.position.y = 1.2;
 	gltf.scene.position.z = 0;
     const material = new THREE.MeshStandardMaterial({ "color": 0xFDD3AE });
+    for(const child of gltf.scene.children)
+        child.material = material;
+    scene.add(gltf.scene);
+}, undefined, console.error);
+gltfLoader.load(`models/head/mesh/shape_${329 + hairType}.glb`, gltf => {
+    gltf.scene.scale.set(.008, .008, .008);
+    gltf.scene.position.x = 0;
+    gltf.scene.position.y = 1.15;
+	gltf.scene.position.z = 0;
+    const material = new THREE.MeshStandardMaterial({ "color": 0x7B3A14 });
     for(const child of gltf.scene.children)
         child.material = material;
     scene.add(gltf.scene);
