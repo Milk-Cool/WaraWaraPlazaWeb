@@ -283,7 +283,8 @@ const loadMii = (mii, pos, commid) => {
             });
             const eyeMesh = new THREE.Mesh(eyePlane, eyeMaterial);
             eyeMesh.position.x = pos.x + i * (1 + mii.eyeSpacing * 0.27);
-            eyeMesh.position.y = 1.5;
+            mii.eyeYPosition = 18;
+            eyeMesh.position.y = 1.5 - (mii.eyeYPosition - 12) * 0.007;
             eyeMesh.position.z = pos.z + .2;
             eyeMesh.rotation.z = (Math.PI / 15) * (mii.eyeRotation - 4);
             eyeMesh.material.side = THREE.DoubleSide;
