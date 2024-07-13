@@ -285,6 +285,7 @@ const loadMii = (mii, pos, commid) => {
             eyeMesh.position.x = pos.x + i * (1 + mii.eyeSpacing * 0.27);
             eyeMesh.position.y = 1.5;
             eyeMesh.position.z = pos.z + .2;
+            eyeMesh.rotation.z = (Math.PI / 15) * (mii.eyeRotation - 4);
             eyeMesh.material.side = THREE.DoubleSide;
             if(i > 0) eyeMesh.rotation.y = Math.PI;
             scene.add(eyeMesh);
