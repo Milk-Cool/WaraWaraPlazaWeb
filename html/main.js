@@ -140,7 +140,7 @@ gltfLoader.load("models/body/Female.gltf", gltf => {
     miis.push(gltf.scene);
 }, undefined, console.error);
 
-let angle = Math.PI / 4;
+let angle = 0;
 const dist = 12.5;
 const positions = [];
 for(let _i = 0; _i < 10; _i++) {
