@@ -139,6 +139,17 @@ gltfLoader.load("models/body/Female.gltf", gltf => {
     scene.add(gltf.scene);
     miis.push(gltf.scene);
 }, undefined, console.error);
+let faceType = 0;
+gltfLoader.load(`models/head/mesh/shape_${268 + faceType}.glb`, gltf => {
+    gltf.scene.scale.set(.008, .008, .008);
+    gltf.scene.position.x = 0;
+    gltf.scene.position.y = 1.2;
+	gltf.scene.position.z = 0;
+    const material = new THREE.MeshStandardMaterial({ "color": 0xFDD3AE });
+    for(const child of gltf.scene.children)
+        child.material = material;
+    scene.add(gltf.scene);
+}, undefined, console.error);
 
 let angle = 0;
 const dist = 12.5;
@@ -189,7 +200,6 @@ waitForData().then(() => {
     }
 });
 
-let rot = 0;
 const animate = () => {
 	renderer.render(scene, camera);
 }
