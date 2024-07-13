@@ -72,7 +72,7 @@ for(const position of positions) {
         const material = new THREE.MeshPhysicalMaterial({
             "roughness": 0,
             "transmission": 1,
-            "thickness": 2
+            "thickness": .8
         });
         for(const child of gltf.scene.children)
             child.material = material;
@@ -88,7 +88,7 @@ waitForData().then(() => {
     for(let i = 0; i < positions.length; i++) {
         if(!data[i]?.icon) continue;
         tgaLoader.load("data:application/octet-stream;base64," + data[i].icon, tga => {
-            const iconPlane = new THREE.PlaneGeometry(2, 2, 1, 1);
+            const iconPlane = new THREE.PlaneGeometry(2.2, 2.2, 1, 1);
             const iconMaterial = new THREE.MeshPhongMaterial({
                 "map": tga,
                 "shading": THREE.FlatShading
