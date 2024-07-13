@@ -185,7 +185,15 @@ const mouthColors = [
     0xF24849,
     0xF09A72,
     0x8C5040
-]
+];
+const glassesColors = [
+    0x000000,
+    0x5F380F,
+    0xAA2C17,
+    0x203169,
+    0xA8601C,
+    0x787069
+];
 
 let angle = 0;
 const dist = 12.5;
@@ -260,6 +268,40 @@ const colorCorrectBWA = (img, b, w) => {
             (Math.floor(b / 256) % 256) * (1 - gs)
             + (Math.floor(w / 256) % 256) * gs;
         imgData.data[i + 3] =
+            (b % 256) * (1 - gs)
+            + (w % 256) * gs;
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    canvas.remove();
+    return texture;
+}
+
+/**
+ * @param {THREE.Texture} img The source image
+ * @param {THREE.ColorRepresentation} b The color to replace black parts with (RGB)
+ * @param {THREE.ColorRepresentation} w The color to replace white parts with (RGB)
+ * 
+ * @returns {THREE.CanvasTexture} The resulting texture
+ */
+const colorCorrectBW = (img, b, w) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = img.source.data.width;
+    canvas.height = img.source.data.height;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img.source.data, 0, 0);
+
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    for(let i = 0; i < imgData.data.length; i += 4) {
+        const gs = imgData.data.slice(i, i + 3).map(x => x / 256).reduce((a, b) => a + b, 0) / 3;
+        imgData.data[i] = 
+            (Math.floor(b / 65536) % 256) * (1 - gs)
+            + (Math.floor(w / 65536) % 256) * gs;
+        imgData.data[i + 1] = 
+            (Math.floor(b / 256) % 256) * (1 - gs)
+            + (Math.floor(w / 256) % 256) * gs;
+        imgData.data[i + 2] = 
             (b % 256) * (1 - gs)
             + (w % 256) * gs;
     }
@@ -429,6 +471,28 @@ const loadMii = (mii, pos, commid) => {
             scene.add(gltf.scene);
             miis[n].beard = gltf.scene;
         }, undefined, console.error);
+    imgLoader.load(`models/head/tex/tex_${267 + mii.glassesType}.png`, img => {
+        let m = 0;
+        miis[n].glasses = [];
+        const sizemult = (1 + (mii.glassesScale - 2) * 0.1);
+        for(let i = -0.052 * sizemult; i <= 0.052 * sizemult; i += 0.052 * sizemult * 2) {
+            const scale = .1 * (1 + (mii.glassesScale - 2) * 0.15);
+            const glassesPlane = new THREE.PlaneGeometry(scale, scale, 1, 1);
+            const glassesMaterial = new THREE.MeshPhongMaterial({
+                "map": colorCorrectBW(img, 0x000000, glassesColors[mii.glassesColor]),
+                "shading": THREE.FlatShading,
+                "transparent": true
+            });
+            const glassesMesh = new THREE.Mesh(glassesPlane, glassesMaterial);
+            glassesMesh.position.x = pos.x + i;
+            glassesMesh.position.y = 1.45 - (mii.glassesYPosition - 10) * 0.007;
+            glassesMesh.position.z = pos.z + .25;
+            glassesMesh.material.side = THREE.DoubleSide;
+            if(i > 0) glassesMesh.rotation.y = Math.PI;
+            scene.add(glassesMesh);
+            miis[n].glasses[m++] = glassesMesh;
+        }
+    }, undefined, console.error);
 }
 
 for(const position of positions) {
