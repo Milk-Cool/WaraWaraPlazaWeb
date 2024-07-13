@@ -91,7 +91,7 @@ THREE.Cache.enabled = true;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xE4EFED);
-const MII_DEBUG = false;
+const MII_DEBUG = true;
 const camera = new THREE.PerspectiveCamera(MII_DEBUG ? 25 : 75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.z = 20;
 camera.position.y = 10;
@@ -251,7 +251,9 @@ const loadMii = (mii, pos, commid) => {
         let m = 0;
         miis[n].eyes = [];
         for(let i = -0.05; i <= 0.05; i += 0.1) {
-            const eyePlane = new THREE.PlaneGeometry(.1, .1, 1, 1);
+            const scale = .1 * (1 + (mii.eyeScale - 4) * 0.15);
+            const multSY = 1 + (mii.eyeVerticalStretch - 3) * 0.17;
+            const eyePlane = new THREE.PlaneGeometry(scale, scale * multSY, 1, 1);
             const eyeMaterial = new THREE.MeshPhongMaterial({
                 "map": colorCorrect(img, 0, 0xffffff, eyeColors[mii.eyeColor]),
                 "shading": THREE.FlatShading,
