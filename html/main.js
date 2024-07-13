@@ -157,6 +157,28 @@ const eyeColors = [
     0x4554A7,
     0x397158
 ];
+const skinColors = [
+    0xFDD3AE,
+    0xFCC58E,
+    0xFBB56A,
+    0xAD5128,
+    0x632C18,
+    0xFABEA6,
+    0xF8A98C,
+    0xDE7941,
+    0x8C3C23,
+    0x3B2D22
+];
+const hairColors = [
+    0x000000,
+    0x402011,
+    0x5C180B,
+    0x7B3A14,
+    0x777880,
+    0x4E3E10,
+    0x875818,
+    0xD1A04A
+];
 
 let angle = 0;
 const dist = 12.5;
@@ -230,7 +252,7 @@ const loadMii = (mii, pos, commid) => {
         gltf.scene.position.x = pos.x;
         gltf.scene.position.y = 1.2;
         gltf.scene.position.z = pos.z;
-        const material = new THREE.MeshStandardMaterial({ "color": 0xFDD3AE });
+        const material = new THREE.MeshStandardMaterial({ "color": skinColors[mii.skinColor] });
         for(const child of gltf.scene.children)
             child.material = material;
         scene.add(gltf.scene);
@@ -241,7 +263,7 @@ const loadMii = (mii, pos, commid) => {
         gltf.scene.position.x = pos.x;
         gltf.scene.position.y = 1.15;
         gltf.scene.position.z = pos.z;
-        const material = new THREE.MeshStandardMaterial({ "color": 0x7B3A14 });
+        const material = new THREE.MeshStandardMaterial({ "color": hairColors[mii.hairColor] });
         for(const child of gltf.scene.children)
             child.material = material;
         scene.add(gltf.scene);
