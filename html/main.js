@@ -31,7 +31,6 @@ const floorMesh = new THREE.Mesh(floor, floorMaterial);
 floorMesh.position.y = 0;
 floorMesh.rotation.x = -Math.PI / 2;
 floorMesh.rotation.z = Math.PI / 4;
-floorMesh.material.side = THREE.DoubleSide;
 scene.add(floorMesh);
 
 const gltfLoader = new GLTFLoader();
