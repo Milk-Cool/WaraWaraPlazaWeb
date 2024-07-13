@@ -91,7 +91,8 @@ THREE.Cache.enabled = true;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xE4EFED);
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const MII_DEBUG = false;
+const camera = new THREE.PerspectiveCamera(MII_DEBUG ? 25 : 75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.z = 20;
 camera.position.y = 10;
 camera.rotation.x = -.5;
@@ -148,6 +149,14 @@ const favoriteColors = [
     0xE0E0E0,
     0x181914
 ];
+const eyeColors = [
+    0x000000,
+    0x6C7071,
+    0x663C2C,
+    0x605D30,
+    0x4554A7,
+    0x397158
+];
 
 let angle = 0;
 const dist = 12.5;
@@ -155,6 +164,45 @@ const positions = [];
 for(let _i = 0; _i < 10; _i++) {
     positions.push([dist * Math.cos(angle), dist * Math.sin(angle)]);
     angle += Math.PI / 5;
+}
+
+/**
+ * 
+ * @param {THREE.Texture} img The source image
+ * @param {THREE.ColorRepresentation} r The color to replace red parts with
+ * @param {THREE.ColorRepresentation} g The color to replace green parts with
+ * @param {THREE.ColorRepresentation} b The color to replace blue parts with
+ * 
+ * @returns {THREE.CanvasTexture} The resulting texture
+ */
+const colorCorrect = (img, r, g, b) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = img.source.data.width;
+    canvas.height = img.source.data.height;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img.source.data, 0, 0);
+
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    for(let i = 0; i < imgData.data.length; i += 4) {
+        const irgb = imgData.data.slice(i, i + 3).map(x => x / 256);
+        imgData.data[i] = 
+            Math.floor(r / 65536) * irgb[0]
+            + Math.floor(g / 65536) * irgb[1]
+            + Math.floor(b / 65536) * irgb[2];
+        imgData.data[i + 1] = 
+            (Math.floor(r / 256) % 256) * irgb[0]
+            + (Math.floor(g / 256) % 256) * irgb[1]
+            + (Math.floor(b / 256) % 256) * irgb[2];
+        imgData.data[i + 2] = 
+            (r % 256) * irgb[0]
+            + (g % 256) * irgb[1]
+            + (b % 256) * irgb[2];
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    canvas.remove();
+    return texture;
 }
 
 /** 
@@ -165,16 +213,17 @@ for(let _i = 0; _i < 10; _i++) {
  * @param {number} commid The community number
  */
 const loadMii = (mii, pos, commid) => {
+    miis.push({});
+    const n = miis.length - 1;
     gltfLoader.load(mii.gender ? "models/body/Female.gltf" : "models/body/Male.gltf", gltf => {
         gltf.scene.position.x = pos.x;
         gltf.scene.position.y = 0;
         gltf.scene.position.z = pos.z;	
         scene.add(gltf.scene);
-        miis.push(gltf.scene);
         const color = favoriteColors[mii.favoriteColor];
         const material = new THREE.MeshStandardMaterial({ "color": color });
         gltf.scene.children[mii.gender ? 1 : 0].material = material;
-        console.log();
+        miis[n].body = gltf.scene;
     }, undefined, console.error);
     gltfLoader.load(`models/head/mesh/shape_${268 + mii.faceType}.glb`, gltf => {
         gltf.scene.scale.set(.008, .008, .008);
@@ -185,6 +234,7 @@ const loadMii = (mii, pos, commid) => {
         for(const child of gltf.scene.children)
             child.material = material;
         scene.add(gltf.scene);
+        miis[n].head = gltf.scene;
     }, undefined, console.error);
     gltfLoader.load(`models/head/mesh/shape_${329 + mii.hairType}.glb`, gltf => {
         gltf.scene.scale.set(.008, .008, .008);
@@ -195,6 +245,27 @@ const loadMii = (mii, pos, commid) => {
         for(const child of gltf.scene.children)
             child.material = material;
         scene.add(gltf.scene);
+        miis[n].hair = gltf.scene;
+    }, undefined, console.error);
+    imgLoader.load(`models/head/tex/tex_${135 + mii.eyeType}.png`, img => {
+        let m = 0;
+        miis[n].eyes = [];
+        for(let i = -0.05; i <= 0.05; i += 0.1) {
+            const eyePlane = new THREE.PlaneGeometry(.1, .1, 1, 1);
+            const eyeMaterial = new THREE.MeshPhongMaterial({
+                "map": colorCorrect(img, 0, 0xffffff, eyeColors[mii.eyeColor]),
+                "shading": THREE.FlatShading,
+                "transparent": true
+            });
+            const eyeMesh = new THREE.Mesh(eyePlane, eyeMaterial);
+            eyeMesh.position.x = pos.x + i * (1 + mii.eyeSpacing * 0.27);
+            eyeMesh.position.y = 1.5;
+            eyeMesh.position.z = pos.z + .2;
+            eyeMesh.material.side = THREE.DoubleSide;
+            if(i > 0) eyeMesh.rotation.y = Math.PI;
+            scene.add(eyeMesh);
+            miis[n].eyes[m++] = eyeMesh;
+        }
     }, undefined, console.error);
 }
 
@@ -239,7 +310,7 @@ waitForData().then(() => {
     }
 });
 
-const imgLoader = new THREE.ImageLoader();
+const imgLoader = new THREE.TextureLoader();
 
 let i = -30;
 waitForData().then(() => {
