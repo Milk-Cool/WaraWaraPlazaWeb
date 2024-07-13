@@ -4,6 +4,17 @@ import tga2png from "tga2png";
 import fs from "fs";
 import zlib from "zlib";
 
+// const miiData = 'AwEAMLrDTIqIpLZhlH8Ps6TA4eK42QAAAFAOMHPgSQBtAG8AcgBhAHPgDzAAAGsrAgA5AQJoRBgm\r\nNEYUgRIWaA0AACmGAUhQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG7s';
+// const mii = new miiJS.default(Buffer.from(miiData, 'base64'));
+// mii.hairType = 1;
+// mii.favoriteColor = 7;
+// const studioUrl = mii.studioUrl({
+// 	width: 512,
+// 	bgColor: '131733FF'
+// });
+
+// console.log(studioUrl);
+
 export async function getWaraWaraData() {
     const f = await fetch("http://api.olv.pretendo.cc/v1/topics");
     const t = await f.text();
@@ -16,7 +27,7 @@ export async function getWaraWaraData() {
         delete topic.title_ids;
         delete topic.title_id;
         delete topic.is_recommended;
-        delete topic.position;
+        // delete topic.position;
 
         topic.icon = zlib.inflateSync(Buffer.from(topic.icon, "base64")).toString("base64");
         

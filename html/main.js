@@ -134,35 +134,20 @@ const miis = [];
 const communities = [];
 const icons = [];
 
-gltfLoader.load("models/body/Female.gltf", gltf => {
-    gltf.scene.position.x = 0;
-    gltf.scene.position.y = 0;
-	gltf.scene.position.z = 0;	
-    scene.add(gltf.scene);
-    miis.push(gltf.scene);
-}, undefined, console.error);
-let faceType = 0;
-let hairType = 0;
-gltfLoader.load(`models/head/mesh/shape_${268 + faceType}.glb`, gltf => {
-    gltf.scene.scale.set(.008, .008, .008);
-    gltf.scene.position.x = 0;
-    gltf.scene.position.y = 1.2;
-	gltf.scene.position.z = 0;
-    const material = new THREE.MeshStandardMaterial({ "color": 0xFDD3AE });
-    for(const child of gltf.scene.children)
-        child.material = material;
-    scene.add(gltf.scene);
-}, undefined, console.error);
-gltfLoader.load(`models/head/mesh/shape_${329 + hairType}.glb`, gltf => {
-    gltf.scene.scale.set(.008, .008, .008);
-    gltf.scene.position.x = 0;
-    gltf.scene.position.y = 1.15;
-	gltf.scene.position.z = 0;
-    const material = new THREE.MeshStandardMaterial({ "color": 0x7B3A14 });
-    for(const child of gltf.scene.children)
-        child.material = material;
-    scene.add(gltf.scene);
-}, undefined, console.error);
+const favoriteColors = [
+    0xD4391F,
+    0xF56E29,
+    0xFED93A,
+    0x78D32C,
+    0x377930,
+    0x0C49B3,
+    0x3CAADF,
+    0xF1597C,
+    0x774CAE,
+    0x483817,
+    0xE0E0E0,
+    0x181914
+];
 
 let angle = 0;
 const dist = 12.5;
@@ -170,6 +155,47 @@ const positions = [];
 for(let _i = 0; _i < 10; _i++) {
     positions.push([dist * Math.cos(angle), dist * Math.sin(angle)]);
     angle += Math.PI / 5;
+}
+
+/** 
+ * Loads a Mii onto the screen.
+ * 
+ * @param {object} mii The Mii data
+ * @param {{ x: number, z: number }} pos The Mii position
+ * @param {number} commid The community number
+ */
+const loadMii = (mii, pos, commid) => {
+    gltfLoader.load(mii.gender ? "models/body/Female.gltf" : "models/body/Male.gltf", gltf => {
+        gltf.scene.position.x = pos.x;
+        gltf.scene.position.y = 0;
+        gltf.scene.position.z = pos.z;	
+        scene.add(gltf.scene);
+        miis.push(gltf.scene);
+        const color = favoriteColors[mii.favoriteColor];
+        const material = new THREE.MeshStandardMaterial({ "color": color });
+        gltf.scene.children[mii.gender ? 1 : 0].material = material;
+        console.log();
+    }, undefined, console.error);
+    gltfLoader.load(`models/head/mesh/shape_${268 + mii.faceType}.glb`, gltf => {
+        gltf.scene.scale.set(.008, .008, .008);
+        gltf.scene.position.x = pos.x;
+        gltf.scene.position.y = 1.2;
+        gltf.scene.position.z = pos.z;
+        const material = new THREE.MeshStandardMaterial({ "color": 0xFDD3AE });
+        for(const child of gltf.scene.children)
+            child.material = material;
+        scene.add(gltf.scene);
+    }, undefined, console.error);
+    gltfLoader.load(`models/head/mesh/shape_${329 + mii.hairType}.glb`, gltf => {
+        gltf.scene.scale.set(.008, .008, .008);
+        gltf.scene.position.x = pos.x;
+        gltf.scene.position.y = 1.15;
+        gltf.scene.position.z = pos.z;
+        const material = new THREE.MeshStandardMaterial({ "color": 0x7B3A14 });
+        for(const child of gltf.scene.children)
+            child.material = material;
+        scene.add(gltf.scene);
+    }, undefined, console.error);
 }
 
 for(const position of positions) {
@@ -211,6 +237,15 @@ waitForData().then(() => {
             icons.push(iconMesh);
         }, undefined, console.error);
     }
+});
+
+const imgLoader = new THREE.ImageLoader();
+
+let i = -30;
+waitForData().then(() => {
+    for(const comm of data)
+        for(const person of comm.people)
+            loadMii(person.mii, { "x": i++, "z": 0 }, comm.position - 1);
 });
 
 const animate = () => {
