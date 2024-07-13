@@ -91,7 +91,7 @@ THREE.Cache.enabled = true;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xE4EFED);
-const MII_DEBUG = true;
+const MII_DEBUG = false;
 const camera = new THREE.PerspectiveCamera(MII_DEBUG ? 15 : 75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.z = 20;
 camera.position.y = 10;
@@ -493,6 +493,23 @@ const loadMii = (mii, pos, commid) => {
             miis[n].glasses[m++] = glassesMesh;
         }
     }, undefined, console.error);
+    if(mii.moleEnabled)
+        imgLoader.load(`models/head/tex/tex_${288}.png`, img => {
+            const scale = .03 * (1 + (mii.moleScale - 4) * 0.15);
+            const molePlane = new THREE.PlaneGeometry(scale, scale, 1, 1);
+            const moleMaterial = new THREE.MeshPhongMaterial({
+                "map": colorCorrectBWA(img, 0, 0x000000ff),
+                "shading": THREE.FlatShading,
+                "transparent": true
+            });
+            const moleMesh = new THREE.Mesh(molePlane, moleMaterial);
+            moleMesh.position.x = pos.x + (mii.moleXPosition - 8) * 0.03;
+            moleMesh.position.y = 1.35 + (mii.moleYPosition - 15) * 0.01;
+            moleMesh.position.z = pos.z + .2;
+            moleMesh.material.side = THREE.DoubleSide;
+            scene.add(moleMesh);
+            miis[n].mole = moleMesh;
+        }, undefined, console.error);
 }
 
 for(const position of positions) {
