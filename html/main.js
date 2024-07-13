@@ -9,6 +9,14 @@ camera.position.z = 20;
 camera.position.y = 10;
 camera.rotation.x = -.5;
 
+let data = null;
+fetch("/data").then(resp => resp.json()).then(json => data = json);
+const checkForData = resolve => {
+    if(data === null) setTimeout(checkForData, 1, resolve);
+    else resolve();
+}
+const waitForData = () => new Promise(checkForData);
+
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
@@ -68,7 +76,6 @@ for(const position of positions) {
         });
         for(const child of gltf.scene.children)
             child.material = material;
-        gltf.scene.rotation.y = Math.PI / 2;
         scene.add(gltf.scene);
         communities.push(gltf.scene);
     }, undefined, console.error);
@@ -76,28 +83,33 @@ for(const position of positions) {
 
 const tgaLoader = new TGALoader();
 
-tgaLoader.load("textures/test_community.tga", tga => {
-    for(const position of positions) {
-        const iconPlane = new THREE.PlaneGeometry(2.6, 2.6, 1, 1);
-        const iconMaterial = new THREE.MeshPhongMaterial({
-            "map": tga,
-            "shading": THREE.FlatShading
-        });
-        const iconMesh = new THREE.Mesh(iconPlane, iconMaterial);
-        iconMesh.position.x = position[0];
-        iconMesh.position.y = 5;
-        iconMesh.position.z = position[1];
-        iconMesh.material.side = THREE.DoubleSide;
-        scene.add(iconMesh);
-        icons.push(iconMesh);
+waitForData().then(() => {
+    for(let i = 0; i < positions.length; i++) {
+        if(!data[i]?.icon) continue;
+        tgaLoader.load("data:application/octet-stream;base64," + data[i].icon, tga => {
+            const iconPlane = new THREE.PlaneGeometry(2.6, 2.6, 1, 1);
+            const iconMaterial = new THREE.MeshPhongMaterial({
+                "map": tga,
+                "shading": THREE.FlatShading
+            });
+            const iconMesh = new THREE.Mesh(iconPlane, iconMaterial);
+            iconMesh.position.x = positions[i][0];
+            iconMesh.position.y = 5;
+            iconMesh.position.z = positions[i][1];
+            iconMesh.material.side = THREE.DoubleSide;
+            scene.add(iconMesh);
+            icons.push(iconMesh);
+        }, undefined, console.error);
     }
-}, undefined, console.error);
+});
 
+let rot = 0;
 const animate = () => {
+    rot += .01;
     for(const community of communities)
-        community.rotation.y += 0.01;
+        community.rotation.y = Math.PI / 2 + rot;
     for(const icon of icons)
-        icon.rotation.y += 0.01;
+        icon.rotation.y = rot;
 	renderer.render(scene, camera);
 }
 renderer.setAnimationLoop(animate);
