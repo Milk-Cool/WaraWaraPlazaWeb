@@ -93,8 +93,9 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xE4EFED);
 const MII_DEBUG = false;
 const ROT_DEBUG = false;
+const OPT_DEBUG = true;
 const camera = new THREE.PerspectiveCamera(MII_DEBUG ? 15 : 75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 20;
+camera.position.z = 20 - Number(OPT_DEBUG) * 60;
 camera.position.y = 10;
 camera.rotation.x = -.5;
 
@@ -614,12 +615,11 @@ waitForData().then(() => {
 
 const imgLoader = new THREE.TextureLoader();
 
-let i = -31;
 waitForData().then(() => {
     if(ROT_DEBUG) return;
     for(const comm of data)
         for(const person of comm.people)
-            loadMii(person.mii, { "x": i++, "z": 0 }, comm.position - 1);
+            loadMii(person.mii, { "x": Math.random() * 100 - 50, "z": Math.random() * 70 - 35 }, comm.position - 1);
 });
 
 const animate = () => {
