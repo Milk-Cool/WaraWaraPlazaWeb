@@ -92,6 +92,7 @@ THREE.Cache.enabled = true;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xE4EFED);
 const MII_DEBUG = false;
+const ROT_DEBUG = false;
 const camera = new THREE.PerspectiveCamera(MII_DEBUG ? 15 : 75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.z = 20;
 camera.position.y = 10;
@@ -596,12 +597,26 @@ waitForData().then(() => {
             icons.push(iconMesh);
         }, undefined, console.error);
     }
+    let frame = 0; // max 3000
+    let lastRot = -Infinity;
+    setInterval(() => {
+        for(let i = 0; i < positions.length; i++) {
+            if(!icons[i] || !communities[i]) continue;
+            const rot = Math.sin(frame / 1500 * Math.PI) / 2;
+            // console.log(communities[i].rotation)
+            communities[i].rotateX(lastRot == -Infinity ? rot : rot - lastRot);
+            lastRot = rot;
+            frame++;
+            frame %= 3000;
+        }
+    }, 1000 / 60);
 });
 
 const imgLoader = new THREE.TextureLoader();
 
 let i = -31;
 waitForData().then(() => {
+    if(ROT_DEBUG) return;
     for(const comm of data)
         for(const person of comm.people)
             loadMii(person.mii, { "x": i++, "z": 0 }, comm.position - 1);
