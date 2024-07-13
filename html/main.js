@@ -5,9 +5,9 @@ import { TGALoader } from "three-tgaloader";
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xE4EFED);
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 17;
-camera.position.y = 7;
-camera.rotation.x = -.3;
+camera.position.z = 20;
+camera.position.y = 10;
+camera.rotation.x = -.5;
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -47,36 +47,50 @@ gltfLoader.load("models/body/Female.gltf", gltf => {
     miis.push(gltf.scene);
 }, undefined, console.error);
 
-gltfLoader.load("models/community.gltf", gltf => {
-    gltf.scene.scale.set(.5, .5, .5);
-    gltf.scene.position.x = 0;
-    gltf.scene.position.y = 5;
-	gltf.scene.position.z = 0;
-    const material = new THREE.MeshPhysicalMaterial({
-        "roughness": 0,
-        "transmission": 1,
-        "thickness": 2
-    });
-    for(const child of gltf.scene.children)
-        child.material = material;
-    gltf.scene.rotation.y = Math.PI / 2;
-    scene.add(gltf.scene);
-    communities.push(gltf.scene);
-}, undefined, console.error);
+let angle = Math.PI / 4;
+const dist = 12.5;
+const positions = [];
+for(let _i = 0; _i < 10; _i++) {
+    positions.push([dist * Math.cos(angle), dist * Math.sin(angle)]);
+    angle += Math.PI / 5;
+}
+
+for(const position of positions) {
+    gltfLoader.load("models/community.gltf", gltf => {
+        gltf.scene.scale.set(.5, .5, .5);
+        gltf.scene.position.x = position[0];
+        gltf.scene.position.y = 5;
+        gltf.scene.position.z = position[1];
+        const material = new THREE.MeshPhysicalMaterial({
+            "roughness": 0,
+            "transmission": 1,
+            "thickness": 2
+        });
+        for(const child of gltf.scene.children)
+            child.material = material;
+        gltf.scene.rotation.y = Math.PI / 2;
+        scene.add(gltf.scene);
+        communities.push(gltf.scene);
+    }, undefined, console.error);
+}
 
 const tgaLoader = new TGALoader();
 
-const icon = tgaLoader.load("textures/test_community.tga", tga => {
-    const iconPlane = new THREE.PlaneGeometry(2.6, 2.6, 1, 1);
-    const iconMaterial = new THREE.MeshPhongMaterial({
-        "map": tga,
-        "shading": THREE.FlatShading
-    });
-    const iconMesh = new THREE.Mesh(iconPlane, iconMaterial);
-    iconMesh.position.y = 5;
-    iconMesh.material.side = THREE.DoubleSide;
-    scene.add(iconMesh);
-    icons.push(iconMesh);
+tgaLoader.load("textures/test_community.tga", tga => {
+    for(const position of positions) {
+        const iconPlane = new THREE.PlaneGeometry(2.6, 2.6, 1, 1);
+        const iconMaterial = new THREE.MeshPhongMaterial({
+            "map": tga,
+            "shading": THREE.FlatShading
+        });
+        const iconMesh = new THREE.Mesh(iconPlane, iconMaterial);
+        iconMesh.position.x = position[0];
+        iconMesh.position.y = 5;
+        iconMesh.position.z = position[1];
+        iconMesh.material.side = THREE.DoubleSide;
+        scene.add(iconMesh);
+        icons.push(iconMesh);
+    }
 }, undefined, console.error);
 
 const animate = () => {
