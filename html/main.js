@@ -395,6 +395,27 @@ const loadMii = (mii, pos, commid) => {
         scene.add(mouthMesh);
         miis[n].mouth = mouthMesh;
     }, undefined, console.error);
+    imgLoader.load(`models/head/tex/tex_${341 + mii.mustacheType}.png`, img => {
+        let m = 0;
+        miis[n].mustache = [];
+        for(let i = -0.05; i <= 0.05; i += 0.1) {
+            const scale = .1 * (1 + (mii.mustacheScale - 4) * 0.15);
+            const mustachePlane = new THREE.PlaneGeometry(scale, scale, 1, 1);
+            const mustacheMaterial = new THREE.MeshPhongMaterial({
+                "map": colorCorrectBWA(img, 0, hairColors[mii.facialHairColor] * 0x100 + 0xff),
+                "shading": THREE.FlatShading,
+                "transparent": true
+            });
+            const mustacheMesh = new THREE.Mesh(mustachePlane, mustacheMaterial);
+            mustacheMesh.position.x = pos.x + i;
+            mustacheMesh.position.y = 1.35 - (mii.mustacheYPosition - 10) * 0.007;
+            mustacheMesh.position.z = pos.z + .2;
+            mustacheMesh.material.side = THREE.DoubleSide;
+            if(i > 0) mustacheMesh.rotation.y = Math.PI;
+            scene.add(mustacheMesh);
+            miis[n].mustache[m++] = mustacheMesh;
+        }
+    }, undefined, console.error);
 }
 
 for(const position of positions) {
