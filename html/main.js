@@ -416,6 +416,19 @@ const loadMii = (mii, pos, commid) => {
             miis[n].mustache[m++] = mustacheMesh;
         }
     }, undefined, console.error);
+    if(mii.beardType != 0) 
+        gltfLoader.load(`models/head/mesh/shape_${mii.beardType < 4 ? 1 + mii.beardType : [574, 583][mii.beardType - 4]}.glb`, gltf => {
+            gltf.scene.scale.set(.008, .008, .008);
+            gltf.scene.position.x = pos.x;
+            gltf.scene.position.y = 1;
+            gltf.scene.position.z = pos.z - 0.1;
+            gltf.scene.rotation.y = Math.PI;
+            const material = new THREE.MeshStandardMaterial({ "color": hairColors[mii.facialHairColor] });
+            for(const child of gltf.scene.children)
+                child.material = material;
+            scene.add(gltf.scene);
+            miis[n].beard = gltf.scene;
+        }, undefined, console.error);
 }
 
 for(const position of positions) {
