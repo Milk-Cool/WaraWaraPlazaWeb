@@ -92,7 +92,7 @@ THREE.Cache.enabled = true;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xE4EFED);
 const MII_DEBUG = true;
-const camera = new THREE.PerspectiveCamera(MII_DEBUG ? 25 : 75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(MII_DEBUG ? 15 : 75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.z = 20;
 camera.position.y = 10;
 camera.rotation.x = -.5;
@@ -179,6 +179,13 @@ const hairColors = [
     0x875818,
     0xD1A04A
 ];
+const mouthColors = [
+    0xD85422,
+    0xF14225,
+    0xF24849,
+    0xF09A72,
+    0x8C5040
+]
 
 let angle = 0;
 const dist = 12.5;
@@ -352,7 +359,6 @@ const loadMii = (mii, pos, commid) => {
         }
     }, undefined, console.error);
     imgLoader.load(`models/head/tex/tex_${347 + mii.noseType}.png`, img => {
-        let m = 0;
         const scale = .1 * (1 + (mii.noseScale - 5) * 0.15);
         const nosePlane = new THREE.PlaneGeometry(scale, scale, 1, 1);
         const noseMaterial = new THREE.MeshPhongMaterial({
@@ -367,6 +373,27 @@ const loadMii = (mii, pos, commid) => {
         noseMesh.material.side = THREE.DoubleSide;
         scene.add(noseMesh);
         miis[n].nose = noseMesh;
+    }, undefined, console.error);
+    imgLoader.load(`models/head/tex/tex_${289 + mii.mouthType}.png`, img => {
+        const scale = .1 * (1 + (mii.mouthScale - 4) * 0.15);
+        const multSY = 1 + (mii.mouthHorizontalStretch - 3) * 0.17;
+        const mouthPlane = new THREE.PlaneGeometry(scale, scale * multSY, 1, 1);
+        const mouthMaterial = new THREE.MeshPhongMaterial({
+            "map": colorCorrect(img, mouthColors[mii.mouthColor],
+                Math.floor(mouthColors[mii.mouthColor] / 65536) * 0.8 * 65536
+                + Math.floor(mouthColors[mii.mouthColor] / 256) % 256 * 0.8 * 256
+                + mouthColors[mii.mouthColor] % 256 * 0.8,
+                0xffffff),
+            "shading": THREE.FlatShading,
+            "transparent": true
+        });
+        const mouthMesh = new THREE.Mesh(mouthPlane, mouthMaterial);
+        mouthMesh.position.x = pos.x;
+        mouthMesh.position.y = 1.3 - (mii.mouthYPosition - 13) * 0.007;
+        mouthMesh.position.z = pos.z + .2;
+        mouthMesh.material.side = THREE.DoubleSide;
+        scene.add(mouthMesh);
+        miis[n].mouth = mouthMesh;
     }, undefined, console.error);
 }
 
