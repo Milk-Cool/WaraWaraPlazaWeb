@@ -568,8 +568,9 @@ class TransformImageData {
  * @param {object} mii The Mii data
  * @param {{ x: number, z: number }} pos The Mii position
  * @param {number} commid The community number
+ * @param {HTMLProgressElement} prg The progress element
  */
-const loadMii = (mii, pos, commid) => {
+const loadMii = (mii, pos, commid, prg) => {
     miis.push({});
     const n = miis.length - 1;
     loadGLTF(mii.gender ? "models/body/Female.gltf" : "models/body/Male.gltf", gltf => {
@@ -765,6 +766,9 @@ const loadMii = (mii, pos, commid) => {
         miis[n].face = faceMesh;
 
         canvas.remove();
+
+        prg.value++;
+        if(prg.value == prg.max) prg.style.display = "none";
     }, undefined, console.error);
     /*loadImg("eye", img => {
         let m = 0;
@@ -981,9 +985,14 @@ const imgLoader = new THREE.TextureLoader();
 
 waitForData().then(() => {
     if(ROT_DEBUG) return;
+    const amt = data.reduce((a, b) => a + b.people.length, 0);
+    console.log(amt);
+    const prg = document.querySelector("#prg");
+    prg.max = amt;
+    prg.value = 0;
     for(const comm of data)
         for(const person of comm.people)
-            loadMii(person.mii, { "x": Math.random() * 100 - 50, "z": Math.random() * 70 - 35 }, comm.position - 1);
+            loadMii(person.mii, { "x": Math.random() * 100 - 50, "z": Math.random() * 70 - 35 }, comm.position - 1, prg);
 });
 
 const animate = () => {
