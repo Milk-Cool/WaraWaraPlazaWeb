@@ -274,7 +274,7 @@ const loadImg = (url, onDone, onProgress, onError) => {
  * @param {THREE.ColorRepresentation} g The color to replace green parts with (RGB)
  * @param {THREE.ColorRepresentation} b The color to replace blue parts with (RGB)
  * 
- * @returns {THREE.CanvasTexture} The resulting texture
+ * @returns {ImageData} The resulting texture
  */
 const colorCorrect = (img, r, g, b) => {
     const canvas = document.createElement("canvas");
@@ -299,11 +299,8 @@ const colorCorrect = (img, r, g, b) => {
             + (g % 256) * irgb[1]
             + (b % 256) * irgb[2];
     }
-    ctx.putImageData(imgData, 0, 0);
-
-    const texture = new THREE.CanvasTexture(canvas);
     canvas.remove();
-    return texture;
+    return imgData;
 }
 
 /**
@@ -311,7 +308,7 @@ const colorCorrect = (img, r, g, b) => {
  * @param {THREE.ColorRepresentation} b The color to replace black parts with (RGBA)
  * @param {THREE.ColorRepresentation} w The color to replace white parts with (RGBA)
  * 
- * @returns {THREE.CanvasTexture} The resulting texture
+ * @returns {ImageData} The resulting texture
  */
 const colorCorrectBWA = (img, b, w) => {
     const canvas = document.createElement("canvas");
@@ -336,11 +333,8 @@ const colorCorrectBWA = (img, b, w) => {
             (b % 256) * (1 - gs)
             + (w % 256) * gs;
     }
-    ctx.putImageData(imgData, 0, 0);
-
-    const texture = new THREE.CanvasTexture(canvas);
     canvas.remove();
-    return texture;
+    return imgData;
 }
 
 /**
@@ -348,7 +342,7 @@ const colorCorrectBWA = (img, b, w) => {
  * @param {THREE.ColorRepresentation} b The color to replace black parts with (RGB)
  * @param {THREE.ColorRepresentation} w The color to replace white parts with (RGB)
  * 
- * @returns {THREE.CanvasTexture} The resulting texture
+ * @returns {ImageData} The resulting texture
  */
 const colorCorrectBW = (img, b, w) => {
     const canvas = document.createElement("canvas");
@@ -370,11 +364,8 @@ const colorCorrectBW = (img, b, w) => {
             (b % 256) * (1 - gs)
             + (w % 256) * gs;
     }
-    ctx.putImageData(imgData, 0, 0);
-
-    const texture = new THREE.CanvasTexture(canvas);
     canvas.remove();
-    return texture;
+    return imgData;
 }
 
 /** 
