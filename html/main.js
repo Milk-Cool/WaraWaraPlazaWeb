@@ -524,9 +524,11 @@ class TransformImageData {
     /**
      * Flips the image.
      * 
+     * @param {boolean} confirm If false, do not flip. (optional)
      * @returns {TransformImageData} The transformation
      */
-    flip() {
+    flip(b = true) {
+        if(!b) return this;
         if(this.is0()) return this;
         const newCanvas = document.createElement("canvas");
         newCanvas.width = this.canvas.width;
@@ -646,39 +648,39 @@ const loadMii = (mii, pos, commid, prg) => {
         const ctx = canvas.getContext("2d");
 
         // Eyes
-        for(let i = 80; i <= 120; i += 100) {
+        for(let i = 80; i <= 120; i += 40) {
             const scale = .2 * (1 + (mii.eyeScale - 4) * 0.15);
             const multSY = 1 + (mii.eyeVerticalStretch - 3) * 0.17;
             // Transform Image Data
             const tid1 = new TransformImageData(colorCorrect(imgEye, 0, 0xffffff, eyeColors[mii.eyeColor]));
-            if(i > 100) tid1.flip();
             // Finalized Image Data
             const fid1 = tid1
                 .stretch(scale * multSY, scale)
                 .rotate((-Math.PI / 15) * (mii.eyeRotation - 4))
+                .flip(i > 100)
                 .done();
             ctx.drawImage(
                 await createImageBitmap(fid1),
                 100 + (i - 100) * (1 + mii.eyeSpacing * .1) - fid1.width / 2,
-                100 - (mii.eyeYPosition - 12) * 5 - fid1.height / 2
+                120 - (mii.eyeYPosition - 12) * 5 - fid1.height / 2
             );
         }
         // Eyebrows
-        for(let i = 50; i <= 150; i += 100) {
+        for(let i = 80; i <= 120; i += 40) {
             const scale = .2 * (1 + (mii.eyebrowScale - 4) * 0.15);
             const multSY = 1 + (mii.eyebrowVerticalStretch - 3) * 0.17;
             // Transform Image Data
             const tid2 = new TransformImageData(colorCorrectBWA(imgEyebrow, 0, hairColors[mii.eyebrowColor] * 0x100 + 0xff));
-            if(i > 100) tid2.flip();
             // Finalized Image Data
             const fid2 = tid2
                 .stretch(scale * multSY, scale)
                 .rotate((-Math.PI / 15) * (mii.eyebrowRotation - 6))
+                .flip(i > 100)
                 .done();
             ctx.drawImage(
                 await createImageBitmap(fid2),
                 100 + (i - 100) * (1 + mii.eyebrowSpacing * .1) - fid2.width / 2,
-                70 - (mii.eyebrowYPosition - 12) * 5 - fid2.height / 2
+                90 - (mii.eyebrowYPosition - 12) * 5 - fid2.height / 2
             );
         }
         // Nose
@@ -725,19 +727,19 @@ const loadMii = (mii, pos, commid, prg) => {
             );
         }
         // Glasses
-        for(let i = 75; i <= 125; i += 50) {
+        for(let i = 69; i <= 131; i += 62) {
             const scaleGlasses = .2 * (1 + (mii.glassesScale - 2) * 0.15);
             // Transform Image Data
             const tid6 = new TransformImageData(colorCorrectBW(imgGlasses, 0x000000, glassesColors[mii.glassesColor]));
-            if(i > 100) tid6.flip();
             // Finalized Image Data
             const fid6 = tid6
                 .stretch(scaleGlasses, scaleGlasses)
+                .flip(i > 100)
                 .done();
             ctx.drawImage(
                 await createImageBitmap(fid6),
                 i - fid6.width / 2,
-                100 - (mii.glassesYPosition - 10) * 5 - fid6.height / 2
+                120 - (mii.glassesYPosition - 10) * 5 - fid6.height / 2
             );
         }
         // Mole
