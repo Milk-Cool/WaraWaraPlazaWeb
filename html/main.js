@@ -408,6 +408,15 @@ class TransformImageData {
     }
 
     /**
+     * Checks if the area of the canvas is 0.
+     * 
+     * @returns {boolean} Whether the area is 0
+     */
+    is0() {
+        return this.canvas.width * this.canvas.height == 0;
+    }
+
+    /**
      * Shows the canvas on the screen.
      * ONLY USED IN DEBUGGING!!!
      * 
@@ -426,6 +435,7 @@ class TransformImageData {
      * @returns {TransformImageData} The transformation
      */
     stretch(y, x = 1) {
+        if(this.is0()) return this;
         let newCanvas = document.createElement("canvas");
         newCanvas.width = this.canvas.width;
         newCanvas.height = this.canvas.height;
@@ -468,6 +478,7 @@ class TransformImageData {
      * @returns {TransformImageData} The transformation
      */
     rotate(r) {
+        if(this.is0()) return this;
         let minX, minY = Infinity;
         let maxX, maxY = -Infinity;
         const pointCenter = [this.canvas.width / 2, this.canvas.height / 2];
@@ -491,15 +502,12 @@ class TransformImageData {
         maxX = Math.max(pointNW[0], pointNE[0], pointSW[0], pointSE[0]);
         minY = Math.min(pointNW[1], pointNE[1], pointSW[1], pointSE[1]);
         maxY = Math.max(pointNW[1], pointNE[1], pointSW[1], pointSE[1]);
-        console.log(pointNW, pointNE, pointSW, pointSE);
-        console.log(minX, maxX, minY, maxY);
         const newCanvas = document.createElement("canvas");
         newCanvas.width = maxX - minX;
         newCanvas.height = maxY - minY;
         const newCtx = newCanvas.getContext("2d");
         newCtx.translate(newCanvas.width / 2, newCanvas.height / 2);
         newCtx.rotate(r);
-        console.log(-minX, -minY)
         newCtx.drawImage(this.canvas, this.canvas.width / -2, this.canvas.height / -2);
         newCtx.rotate(-r);
         newCtx.translate(newCanvas.width / -2, newCanvas.height / -2);
@@ -519,14 +527,16 @@ class TransformImageData {
      * @returns {TransformImageData} The transformation
      */
     flip() {
-        const newCanvas = document.createElement("canvas");
-        const newCtx = newCanvas.getContext("2d");
-        newCtx.scale(-1, 1);
-        newCtx.drawImage(this.canvas);
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.ctx.drawImage(newCanvas);
-        newCanvas.remove();
-        return this;
+        if(this.is0()) return this;
+        // const newCanvas = document.createElement("canvas");
+        // const newCtx = newCanvas.getContext("2d");
+        // newCtx.scale(-1, 1);
+        // newCtx.drawImage(this.canvas, 0, 0);
+        // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // this.ctx.drawImage(newCanvas, 0, 0);
+        // newCanvas.remove();
+        // return this;
+        return this.stretch(1, -1);
     }
 
     /**
@@ -535,6 +545,17 @@ class TransformImageData {
      * @returns {ImageData} Image data
      */
     done() {
+        if(this.is0()) {
+            this.canvas.remove();
+            const newCanvas = document.createElement("canvas");
+            newCanvas.width = 1;
+            newCanvas.height = 1;
+            const imgData = newCanvas
+                .getContext("2d")
+                .getImageData(0, 0, 1, 1);
+            newCanvas.remove();
+            return imgData;
+        }
         const imgData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
         this.canvas.remove();
         return imgData;
@@ -604,33 +625,148 @@ const loadMii = (mii, pos, commid) => {
         `models/head/tex/tex_${341 + mii.mustacheType}.png`, // [4] mustache
         `models/head/tex/tex_${267 + mii.glassesType}.png`, // [5] glasses
         `models/head/tex/tex_${288}.png` // [6] mole
-    ], models => {
+    ], imgs => {
+        const [
+            imgEye,
+            imgEyebrow,
+            imgNose,
+            imgMouth,
+            imgMustache,
+            imgGlasses,
+            imgMole
+        ] = imgs;
+
         const canvas = document.createElement("canvas");
         canvas.width = 200;
         canvas.height = 200;
         const ctx = canvas.getContext("2d");
 
+        // Eyes
         for(let i = 50; i <= 150; i += 100) {
-            const scale = 0.2 * (1 + (mii.eyeScale - 4) * 0.15);
+            const scale = .2 * (1 + (mii.eyeScale - 4) * 0.15);
             const multSY = 1 + (mii.eyeVerticalStretch - 3) * 0.17;
-            const eyePlane = new THREE.PlaneGeometry(scale, scale * multSY, 1, 1);
+            // Transform Image Data
+            const tid1 = new TransformImageData(colorCorrect(imgEye, 0, 0xffffff, eyeColors[mii.eyeColor]));
+            if(i > 100) tid1.flip();
+            // Finalized Image Data
+            const fid1 = tid1
+                .stretch(scale * multSY, scale)
+                .rotate((-Math.PI / 15) * (mii.eyeRotation - 4))
+                .done();
             ctx.putImageData(
-                colorCorrect(img, 0, 0xffffff, eyeColors[mii.eyeColor]),
+                fid1,
+                i * (1 + mii.eyeSpacing * .1) - fid1.width / 2,
+                100 - (mii.eyeYPosition - 12) * 5 - fid1.height / 2
             );
-            eyeMesh.position.x = pos.x + i * (1 + mii.eyeSpacing * 0.27);
-            eyeMesh.position.y = 1.45 - (mii.eyeYPosition - 12) * 0.007;
-            eyeMesh.position.z = pos.z + .2;
-            eyeMesh.rotation.z = (-Math.PI / 15) * (mii.eyeRotation - 4);
-            // eyeMesh.material.side = THREE.DoubleSide;
-            if(i > 100) {
-                eyeMesh.rotation.y = Math.PI;
-                eyeMesh.material.side = THREE.BackSide;
-            }
-            scene.add(eyeMesh);
-            miis[n].eyes[m++] = eyeMesh;
         }
+        // Eyebrows
+        for(let i = 50; i <= 150; i += 100) {
+            const scale = .2 * (1 + (mii.eyebrowScale - 4) * 0.15);
+            const multSY = 1 + (mii.eyebrowVerticalStretch - 3) * 0.17;
+            // Transform Image Data
+            const tid2 = new TransformImageData(colorCorrectBWA(imgEyebrow, 0, hairColors[mii.eyebrowColor] * 0x100 + 0xff));
+            if(i > 100) tid2.flip();
+            // Finalized Image Data
+            const fid2 = tid2
+                .stretch(scale * multSY, scale)
+                .rotate((-Math.PI / 15) * (mii.eyebrowRotation - 6))
+                .done();
+            ctx.putImageData(
+                fid2,
+                i * (1 + mii.eyebrowSpacing * .1) - fid2.width / 2,
+                70 - (mii.eyebrowYPosition - 12) * 5 - fid2.height / 2
+            );
+        }
+        // Nose
+        const scaleNose = .2 * (1 + (mii.noseScale - 5) * 0.15);
+        const tid3 = new TransformImageData(colorCorrectBWA(imgNose, 0, 0x000000ff));
+        const fid3 = tid3
+            .stretch(scaleNose, scaleNose)
+            .done();
+        ctx.putImageData(
+            fid3,
+            100 - fid3.width / 2,
+            130 - (mii.noseYPosition - 9) * 5 - fid3.height / 2
+        );
+        // Mouth
+        const scaleMouth = .2 * (1 + (mii.mouthScale - 4) * 0.15);
+        const multSYMouth = 1 + (mii.mouthHorizontalStretch - 3) * 0.17;
+        const tid4 = new TransformImageData(colorCorrect(imgMouth, mouthColors[mii.mouthColor],
+            Math.floor(mouthColors[mii.mouthColor] / 65536) * 0.8 * 65536
+            + Math.floor(mouthColors[mii.mouthColor] / 256) % 256 * 0.8 * 256
+            + mouthColors[mii.mouthColor] % 256 * 0.8,
+            0xffffff));
+        const fid4 = tid4
+            .stretch(scaleMouth, scaleMouth * multSYMouth)
+            .done();
+        ctx.putImageData(
+            fid4,
+            100 - fid4.width / 2,
+            160 - (mii.mouthYPosition - 13) * 5 - fid4.height / 2
+        );
+        // Mustache
+        for(let i = 87; i <= 112; i += 50) {
+            const scaleMustache = .2 * (1 + (mii.mustacheScale - 4) * 0.15);
+            // Transform Image Data
+            const tid5 = new TransformImageData(colorCorrectBWA(imgMustache, 0, hairColors[mii.facialHairColor] * 0x100 + 0xff));
+            if(i > 100) tid5.flip();
+            // Finalized Image Data
+            const fid5 = tid5
+                .stretch(scaleMustache, scaleMustache)
+                .done();
+            ctx.putImageData(
+                fid5,
+                i - fid5.width / 2,
+                160 - (mii.mustacheYPosition - 12) * 5 - fid5.height / 2
+            );
+        }
+        // Glasses
+        for(let i = 75; i <= 125; i += 50) {
+            const scaleGlasses = .2 * (1 + (mii.glassesScale - 2) * 0.15);
+            // Transform Image Data
+            const tid6 = new TransformImageData(colorCorrectBW(imgGlasses, 0x000000, glassesColors[mii.glassesColor]));
+            if(i > 100) tid6.flip();
+            // Finalized Image Data
+            const fid6 = tid6
+                .stretch(scaleGlasses, scaleGlasses)
+                .done();
+            ctx.putImageData(
+                fid6,
+                i - fid6.width / 2,
+                100 - (mii.glassesYPosition - 10) * 5 - fid6.height / 2
+            );
+        }
+        // Mole
+        if(mii.moleEnabled) {
+            const scaleMole = .2 * (1 + (mii.moleScale - 4) * 0.15);
+            const tid7 = new TransformImageData(colorCorrectBWA(imgMole, 0, 0x000000ff));
+            const fid7 = tid7
+                .stretch(scaleMole, scaleMole)
+                .done();
+            ctx.putImageData(
+                fid7,
+                mii.moleXPosition * (200 / 16) - fid7.width / 2,
+                mii.moleYPosition * (200 / 30) - fid7.height / 2
+            );
+        }
+
+        // Let's render it now!
+        const facePlane = new THREE.PlaneGeometry(.5, .5, 1, 1);
+        const faceMaterial = new THREE.MeshBasicMaterial({
+            "map": new THREE.CanvasTexture(canvas),
+            "shading": THREE.FlatShading,
+            "transparent": true
+        });
+        const faceMesh = new THREE.Mesh(facePlane, faceMaterial);
+        faceMesh.position.x = pos.x;
+        faceMesh.position.y = 1.5;
+        faceMesh.position.z = pos.z + .2;
+        scene.add(faceMesh);
+        miis[n].face = faceMesh;
+
+        canvas.remove();
     }, undefined, console.error);
-    loadImg("eye", img => {
+    /*loadImg("eye", img => {
         let m = 0;
         miis[n].eyes = [];
         for(let i = -0.05; i <= 0.05; i += 0.1) {
@@ -655,8 +791,8 @@ const loadMii = (mii, pos, commid) => {
             scene.add(eyeMesh);
             miis[n].eyes[m++] = eyeMesh;
         }
-    }, undefined, console.error);
-    loadImg("eyebrow", img => {
+    }, undefined, console.error);*/
+    /*loadImg("eyebrow", img => {
         let m = 0;
         miis[n].eyebrows = [];
         for(let i = -0.05; i <= 0.05; i += 0.1) {
@@ -681,8 +817,8 @@ const loadMii = (mii, pos, commid) => {
             scene.add(eyebrowMesh);
             miis[n].eyebrows[m++] = eyebrowMesh;
         }
-    }, undefined, console.error);
-    loadImg("nose", img => {
+    }, undefined, console.error);*/
+    /*loadImg("nose", img => {
         const scale = .1 * (1 + (mii.noseScale - 5) * 0.15);
         const nosePlane = new THREE.PlaneGeometry(scale, scale, 1, 1);
         const noseMaterial = new THREE.MeshBasicMaterial({
@@ -697,8 +833,8 @@ const loadMii = (mii, pos, commid) => {
         // noseMesh.material.side = THREE.DoubleSide;
         scene.add(noseMesh);
         miis[n].nose = noseMesh;
-    }, undefined, console.error);
-    loadImg("mouth", img => {
+    }, undefined, console.error);*/
+    /*loadImg("mouth", img => {
         const scale = .1 * (1 + (mii.mouthScale - 4) * 0.15);
         const multSY = 1 + (mii.mouthHorizontalStretch - 3) * 0.17;
         const mouthPlane = new THREE.PlaneGeometry(scale, scale * multSY, 1, 1);
@@ -718,8 +854,8 @@ const loadMii = (mii, pos, commid) => {
         // mouthMesh.material.side = THREE.DoubleSide;
         scene.add(mouthMesh);
         miis[n].mouth = mouthMesh;
-    }, undefined, console.error);
-    loadImg("mustache", img => {
+    }, undefined, console.error);*/
+    /*loadImg("mustache", img => {
         let m = 0;
         miis[n].mustache = [];
         for(let i = -0.05; i <= 0.05; i += 0.1) {
@@ -742,8 +878,8 @@ const loadMii = (mii, pos, commid) => {
             scene.add(mustacheMesh);
             miis[n].mustache[m++] = mustacheMesh;
         }
-    }, undefined, console.error);
-    loadImg("glasses", img => {
+    }, undefined, console.error);*/
+    /*loadImg("glasses", img => {
         let m = 0;
         miis[n].glasses = [];
         const sizemult = (1 + (mii.glassesScale - 2) * 0.1);
@@ -767,7 +903,7 @@ const loadMii = (mii, pos, commid) => {
             scene.add(glassesMesh);
             miis[n].glasses[m++] = glassesMesh;
         }
-    }, undefined, console.error);
+    }, undefined, console.error);*/
     if(mii.moleEnabled)
         loadImg("mole", img => {
             const scale = .03 * (1 + (mii.moleScale - 4) * 0.15);
