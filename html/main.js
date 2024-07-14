@@ -514,9 +514,25 @@ class TransformImageData {
     }
 
     /**
+     * Flips the image.
+     * 
+     * @returns {TransformImageData} The transformation
+     */
+    flip() {
+        const newCanvas = document.createElement("canvas");
+        const newCtx = newCanvas.getContext("2d");
+        newCtx.scale(-1, 1);
+        newCtx.drawImage(this.canvas);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.drawImage(newCanvas);
+        newCanvas.remove();
+        return this;
+    }
+
+    /**
      * Destroys the object and returns the new ImageData.
      * 
-     * @returns {ImageData} Image data.
+     * @returns {ImageData} Image data
      */
     done() {
         const imgData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
