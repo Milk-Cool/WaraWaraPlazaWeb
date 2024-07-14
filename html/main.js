@@ -659,7 +659,7 @@ const loadMii = (mii, pos, commid, prg) => {
                 .done();
             ctx.putImageData(
                 fid1,
-                i * (1 + mii.eyeSpacing * .1) - fid1.width / 2,
+                100 + (i - 100) * (1 + mii.eyeSpacing * .1) - fid1.width / 2,
                 100 - (mii.eyeYPosition - 12) * 5 - fid1.height / 2
             );
         }
@@ -677,7 +677,7 @@ const loadMii = (mii, pos, commid, prg) => {
                 .done();
             ctx.putImageData(
                 fid2,
-                i * (1 + mii.eyebrowSpacing * .1) - fid2.width / 2,
+                100 + (i - 100) * (1 + mii.eyebrowSpacing * .1) - fid2.width / 2,
                 70 - (mii.eyebrowYPosition - 12) * 5 - fid2.height / 2
             );
         }
@@ -989,7 +989,6 @@ const imgLoader = new THREE.TextureLoader();
 waitForData().then(() => {
     if(ROT_DEBUG) return;
     const amt = data.reduce((a, b) => a + b.people.length, 0);
-    console.log(amt);
     const prg = document.querySelector("#prg");
     prg.max = amt;
     prg.value = 0;
