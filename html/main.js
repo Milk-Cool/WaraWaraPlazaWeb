@@ -389,6 +389,131 @@ const chainLoad = (loader, urls, onDone, onProgress, onError, n = 0, a = []) => 
     }, onProgress, onError);
 };
 
+class TransformImageData {
+    /**
+     * Initializes a new transformation.
+     * 
+     * @param {ImageData} imgdata Image data
+     * @returns {TransformImageData} The new transformation
+     */
+    constructor(imgdata) {
+        this.canvas = document.createElement("canvas");
+        this.canvas.width = imgdata.width;
+        this.canvas.height = imgdata.height;
+        /** @type {CanvasRenderingContext2D} */
+        this.ctx = this.canvas.getContext("2d");
+        this.ctx.putImageData(imgdata, 0, 0);
+        this.shown = false;
+        return this;
+    }
+
+    /**
+     * Shows the canvas on the screen.
+     * ONLY USED IN DEBUGGING!!!
+     * 
+     * @returns {TransformImageData} The transformation
+     */
+    showDebug() {
+        document.body.appendChild(this.canvas);
+        this.shown = true;
+    }
+
+    /**
+     * Stretches the image.
+     * 
+     * @param {number} y Stretch multiplier on the Y axis
+     * @param {number} x Stretch multiplier on the X axis (defaults to 1)
+     * @returns {TransformImageData} The transformation
+     */
+    stretch(y, x = 1) {
+        let newCanvas = document.createElement("canvas");
+        newCanvas.width = this.canvas.width;
+        newCanvas.height = this.canvas.height;
+        const newCtx = newCanvas.getContext("2d");
+        newCtx.drawImage(this.canvas, 0, 0);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.canvas.width *= x;
+        this.canvas.height *= y;
+        this.ctx.scale(x, y);
+        this.ctx.drawImage(newCanvas, 0, 0);
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        newCanvas.remove();
+        return this;
+    }
+
+    /**
+     * @private
+     * Rotates a point around another point.
+     * 
+     * @param {number} x1 Point 1 X pos
+     * @param {number} y1 Point 1 Y pos
+     * @param {number} x2 Point 2 X pos
+     * @param {number} y2 Point 2 Y pos
+     * @param {number} r Rotation in radans
+     * @returns {[number, number]} Point 1 coords [X, Y]
+     */
+    static rotateAround(x1, y1, x2, y2, r) {  
+        const cos = Math.cos(r),
+            sin = Math.sin(r);
+        return [
+            (cos * (x1 - x2)) + (sin * (y1 - y2)) + x2,
+            (cos * (y1 - y2)) + (sin * (x1 - x2)) + y2
+        ];
+    }
+
+    /**
+     * Rotates the image.
+     * 
+     * @param {number} r Rotation in radians
+     * @returns {TransformImageData} The transformation
+     */
+    rotate(r) {
+        let minX, minY = Infinity;
+        let maxX, maxY = -Infinity;
+        const pointCenter = [this.canvas.width / 2, this.canvas.height / 2];
+        const pointNW = TransformImageData.rotateAround(
+            ...[0, 0],
+            ...pointCenter, -r
+        );
+        const pointNE = TransformImageData.rotateAround(
+            ...[this.canvas.width, 0],
+            ...pointCenter, -r
+        );
+        const pointSW = TransformImageData.rotateAround(
+            ...[0, this.canvas.height],
+            ...pointCenter, -r
+        );
+        const pointSE = TransformImageData.rotateAround(
+            ...[this.canvas.width, this.canvas.height],
+            ...pointCenter, -r
+        );
+        minX = Math.min(pointNW[0], pointNE[0], pointSW[0], pointSE[0]);
+        maxX = Math.max(pointNW[0], pointNE[0], pointSW[0], pointSE[0]);
+        minY = Math.min(pointNW[1], pointNE[1], pointSW[1], pointSE[1]);
+        maxY = Math.max(pointNW[1], pointNE[1], pointSW[1], pointSE[1]);
+        console.log(pointNW, pointNE, pointSW, pointSE);
+        console.log(minX, maxX, minY, maxY);
+        const newCanvas = document.createElement("canvas");
+        newCanvas.width = maxX - minX;
+        newCanvas.height = maxY - minY;
+        const newCtx = newCanvas.getContext("2d");
+        newCtx.translate(newCanvas.width / 2, newCanvas.height / 2);
+        newCtx.rotate(r);
+        console.log(-minX, -minY)
+        newCtx.drawImage(this.canvas, this.canvas.width / -2, this.canvas.height / -2);
+        newCtx.rotate(-r);
+        newCtx.translate(newCanvas.width / -2, newCanvas.height / -2);
+        
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.canvas.width = newCanvas.width;
+        this.canvas.height = newCanvas.height;
+        this.ctx.drawImage(newCanvas, 0, 0);
+        newCanvas.remove();
+
+        return this;
+    }
+}
+
 /** 
  * Loads a Mii onto the screen.
  * 
@@ -445,15 +570,38 @@ const loadMii = (mii, pos, commid) => {
             miis[n].beard = gltf.scene;
         }, undefined, console.error);
     chainLoad(loadImg, [
-        `models/head/tex/tex_${135 + mii.eyeType}.png`,
-        `models/head/tex/tex_${215 + mii.eyebrowType}.png`,
-        `models/head/tex/tex_${347 + mii.noseType}.png`,
-        `models/head/tex/tex_${289 + mii.mouthType}.png`,
-        `models/head/tex/tex_${341 + mii.mustacheType}.png`,
-        `models/head/tex/tex_${267 + mii.glassesType}.png`,
-        `models/head/tex/tex_${288}.png`
+        `models/head/tex/tex_${135 + mii.eyeType}.png`, // [0] eyes
+        `models/head/tex/tex_${215 + mii.eyebrowType}.png`, // [1] eyebrows
+        `models/head/tex/tex_${347 + mii.noseType}.png`, // [2] nose
+        `models/head/tex/tex_${289 + mii.mouthType}.png`, // [3] mouth
+        `models/head/tex/tex_${341 + mii.mustacheType}.png`, // [4] mustache
+        `models/head/tex/tex_${267 + mii.glassesType}.png`, // [5] glasses
+        `models/head/tex/tex_${288}.png` // [6] mole
     ], models => {
-        
+        const canvas = document.createElement("canvas");
+        canvas.width = 200;
+        canvas.height = 200;
+        const ctx = canvas.getContext("2d");
+
+        for(let i = 50; i <= 150; i += 100) {
+            const scale = 30 * (1 + (mii.eyeScale - 4) * 0.15);
+            const multSY = 1 + (mii.eyeVerticalStretch - 3) * 0.17;
+            const eyePlane = new THREE.PlaneGeometry(scale, scale * multSY, 1, 1);
+            ctx.putImageData(
+                colorCorrect(img, 0, 0xffffff, eyeColors[mii.eyeColor]),
+            );
+            eyeMesh.position.x = pos.x + i * (1 + mii.eyeSpacing * 0.27);
+            eyeMesh.position.y = 1.45 - (mii.eyeYPosition - 12) * 0.007;
+            eyeMesh.position.z = pos.z + .2;
+            eyeMesh.rotation.z = (-Math.PI / 15) * (mii.eyeRotation - 4);
+            // eyeMesh.material.side = THREE.DoubleSide;
+            if(i > 100) {
+                eyeMesh.rotation.y = Math.PI;
+                eyeMesh.material.side = THREE.BackSide;
+            }
+            scene.add(eyeMesh);
+            miis[n].eyes[m++] = eyeMesh;
+        }
     }, undefined, console.error);
     loadImg("eye", img => {
         let m = 0;
