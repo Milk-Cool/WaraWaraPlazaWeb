@@ -465,7 +465,7 @@ const loadMii = (mii, pos, commid) => {
             // eyebrowMesh.material.side = THREE.DoubleSide;
             if(i > 0) {
                 eyebrowMesh.rotation.y = Math.PI;
-                // eyebrowMesh.material.side = THREE.BackSide;
+                eyebrowMesh.material.side = THREE.BackSide;
             }
             scene.add(eyebrowMesh);
             miis[n].eyebrows[m++] = eyebrowMesh;
