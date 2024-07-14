@@ -512,6 +512,17 @@ class TransformImageData {
 
         return this;
     }
+
+    /**
+     * Destroys the object and returns the new ImageData.
+     * 
+     * @returns {ImageData} Image data.
+     */
+    done() {
+        const imgData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+        this.canvas.remove();
+        return imgData;
+    }
 }
 
 /** 
@@ -584,7 +595,7 @@ const loadMii = (mii, pos, commid) => {
         const ctx = canvas.getContext("2d");
 
         for(let i = 50; i <= 150; i += 100) {
-            const scale = 30 * (1 + (mii.eyeScale - 4) * 0.15);
+            const scale = 0.2 * (1 + (mii.eyeScale - 4) * 0.15);
             const multSY = 1 + (mii.eyeVerticalStretch - 3) * 0.17;
             const eyePlane = new THREE.PlaneGeometry(scale, scale * multSY, 1, 1);
             ctx.putImageData(
