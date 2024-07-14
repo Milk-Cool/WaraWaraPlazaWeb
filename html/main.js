@@ -629,7 +629,7 @@ const loadMii = (mii, pos, commid, prg) => {
         `models/head/tex/tex_${341 + mii.mustacheType}.png`, // [4] mustache
         `models/head/tex/tex_${267 + mii.glassesType}.png`, // [5] glasses
         `models/head/tex/tex_${288}.png` // [6] mole
-    ], imgs => {
+    ], async imgs => {
         const [
             imgEye,
             imgEyebrow,
@@ -646,7 +646,7 @@ const loadMii = (mii, pos, commid, prg) => {
         const ctx = canvas.getContext("2d");
 
         // Eyes
-        for(let i = 50; i <= 150; i += 100) {
+        for(let i = 80; i <= 120; i += 100) {
             const scale = .2 * (1 + (mii.eyeScale - 4) * 0.15);
             const multSY = 1 + (mii.eyeVerticalStretch - 3) * 0.17;
             // Transform Image Data
@@ -657,8 +657,8 @@ const loadMii = (mii, pos, commid, prg) => {
                 .stretch(scale * multSY, scale)
                 .rotate((-Math.PI / 15) * (mii.eyeRotation - 4))
                 .done();
-            ctx.putImageData(
-                fid1,
+            ctx.drawImage(
+                await createImageBitmap(fid1),
                 100 + (i - 100) * (1 + mii.eyeSpacing * .1) - fid1.width / 2,
                 100 - (mii.eyeYPosition - 12) * 5 - fid1.height / 2
             );
@@ -675,8 +675,8 @@ const loadMii = (mii, pos, commid, prg) => {
                 .stretch(scale * multSY, scale)
                 .rotate((-Math.PI / 15) * (mii.eyebrowRotation - 6))
                 .done();
-            ctx.putImageData(
-                fid2,
+            ctx.drawImage(
+                await createImageBitmap(fid2),
                 100 + (i - 100) * (1 + mii.eyebrowSpacing * .1) - fid2.width / 2,
                 70 - (mii.eyebrowYPosition - 12) * 5 - fid2.height / 2
             );
@@ -687,8 +687,8 @@ const loadMii = (mii, pos, commid, prg) => {
         const fid3 = tid3
             .stretch(scaleNose, scaleNose)
             .done();
-        ctx.putImageData(
-            fid3,
+        ctx.drawImage(
+            await createImageBitmap(fid3),
             100 - fid3.width / 2,
             130 - (mii.noseYPosition - 9) * 5 - fid3.height / 2
         );
@@ -703,8 +703,8 @@ const loadMii = (mii, pos, commid, prg) => {
         const fid4 = tid4
             .stretch(scaleMouth, scaleMouth * multSYMouth)
             .done();
-        ctx.putImageData(
-            fid4,
+        ctx.drawImage(
+            await createImageBitmap(fid4),
             100 - fid4.width / 2,
             160 - (mii.mouthYPosition - 13) * 5 - fid4.height / 2
         );
@@ -718,8 +718,8 @@ const loadMii = (mii, pos, commid, prg) => {
             const fid5 = tid5
                 .stretch(scaleMustache, scaleMustache)
                 .done();
-            ctx.putImageData(
-                fid5,
+            ctx.drawImage(
+                await createImageBitmap(fid5),
                 i - fid5.width / 2,
                 160 - (mii.mustacheYPosition - 12) * 5 - fid5.height / 2
             );
@@ -734,8 +734,8 @@ const loadMii = (mii, pos, commid, prg) => {
             const fid6 = tid6
                 .stretch(scaleGlasses, scaleGlasses)
                 .done();
-            ctx.putImageData(
-                fid6,
+            ctx.drawImage(
+                await createImageBitmap(fid6),
                 i - fid6.width / 2,
                 100 - (mii.glassesYPosition - 10) * 5 - fid6.height / 2
             );
@@ -747,8 +747,8 @@ const loadMii = (mii, pos, commid, prg) => {
             const fid7 = tid7
                 .stretch(scaleMole, scaleMole)
                 .done();
-            ctx.putImageData(
-                fid7,
+            ctx.drawImage(
+                await createImageBitmap(fid7),
                 mii.moleXPosition * (200 / 16) - fid7.width / 2,
                 mii.moleYPosition * (200 / 30) - fid7.height / 2
             );
