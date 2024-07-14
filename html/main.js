@@ -526,7 +526,7 @@ const loadMii = (mii, pos, commid) => {
             // mustacheMesh.material.side = THREE.DoubleSide;
             if(i > 0) {
                 mustacheMesh.rotation.y = Math.PI;
-                // mustacheMesh.material.side = THREE.BackSide;
+                mustacheMesh.material.side = THREE.BackSide;
             }
             scene.add(mustacheMesh);
             miis[n].mustache[m++] = mustacheMesh;
@@ -564,7 +564,7 @@ const loadMii = (mii, pos, commid) => {
             // glassesMesh.material.side = THREE.DoubleSide;
             if(i > 0) {
                 glassesMesh.rotation.y = Math.PI;
-                // glassesMesh.material.side = THREE.BackSide;
+                glassesMesh.material.side = THREE.BackSide;
             }
             scene.add(glassesMesh);
             miis[n].glasses[m++] = glassesMesh;
