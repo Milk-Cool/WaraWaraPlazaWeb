@@ -528,15 +528,18 @@ class TransformImageData {
      */
     flip() {
         if(this.is0()) return this;
-        // const newCanvas = document.createElement("canvas");
-        // const newCtx = newCanvas.getContext("2d");
-        // newCtx.scale(-1, 1);
-        // newCtx.drawImage(this.canvas, 0, 0);
-        // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        // this.ctx.drawImage(newCanvas, 0, 0);
-        // newCanvas.remove();
-        // return this;
-        return this.stretch(1, -1);
+        const newCanvas = document.createElement("canvas");
+        newCanvas.width = this.canvas.width;
+        newCanvas.height = this.canvas.height;
+        const newCtx = newCanvas.getContext("2d");
+        newCtx.translate(newCanvas.width / 2, newCanvas.width / 2);
+        newCtx.scale(-1, 1);
+        newCtx.translate(-(newCanvas.width / 2), -(newCanvas.width / 2));
+        newCtx.drawImage(this.canvas, 0, 0);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.drawImage(newCanvas, 0, 0);
+        newCanvas.remove();
+        return this;
     }
 
     /**
