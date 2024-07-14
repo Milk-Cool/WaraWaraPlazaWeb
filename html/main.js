@@ -368,6 +368,27 @@ const colorCorrectBW = (img, b, w) => {
     return imgData;
 }
 
+/**
+ * Loads multiple models/textures in a chain.
+ * 
+ * @param {THREE.Loader | Function} loader The loader to use
+ * @param {string[]} urls URLs of models to load
+ * @param {(any[]) => any} onDone Callback called when all models are loaded
+ * @param {Function} onProgress Callback called on loading progress
+ * @param {(string | Error) => any} onError Callback called on error
+ * @param {number} n Used internally in the function
+ * @param {any[]} a Used internally in the function
+ */
+const chainLoad = (loader, urls, onDone, onProgress, onError, n = 0, a = []) => {
+    if(!(loader instanceof Function)) loader = loader.load;
+    loader(urls[n], model => {
+        n++;
+        a.push(model);
+        if(n == urls.length) onDone(a);
+        else chainLoad(loader, urls, onDone, onProgress, onError, n, a);
+    }, onProgress, onError);
+};
+
 /** 
  * Loads a Mii onto the screen.
  * 
@@ -410,7 +431,31 @@ const loadMii = (mii, pos, commid) => {
         scene.add(gltf.scene);
         miis[n].hair = gltf.scene;
     }, undefined, console.error);
-    loadImg(`models/head/tex/tex_${135 + mii.eyeType}.png`, img => {
+    if(mii.beardType != 0) 
+        loadGLTF(`models/head/mesh/shape_${mii.beardType < 4 ? 1 + mii.beardType : [574, 583][mii.beardType - 4]}.glb`, gltf => {
+            gltf.scene.scale.set(.008, .008, .008);
+            gltf.scene.position.x = pos.x;
+            gltf.scene.position.y = 1;
+            gltf.scene.position.z = pos.z - 0.1;
+            gltf.scene.rotation.y = Math.PI;
+            const material = new THREE.MeshStandardMaterial({ "color": hairColors[mii.facialHairColor] });
+            for(const child of gltf.scene.children)
+                child.material = material;
+            scene.add(gltf.scene);
+            miis[n].beard = gltf.scene;
+        }, undefined, console.error);
+    chainLoad(loadImg, [
+        `models/head/tex/tex_${135 + mii.eyeType}.png`,
+        `models/head/tex/tex_${215 + mii.eyebrowType}.png`,
+        `models/head/tex/tex_${347 + mii.noseType}.png`,
+        `models/head/tex/tex_${289 + mii.mouthType}.png`,
+        `models/head/tex/tex_${341 + mii.mustacheType}.png`,
+        `models/head/tex/tex_${267 + mii.glassesType}.png`,
+        `models/head/tex/tex_${288}.png`
+    ], models => {
+        
+    }, undefined, console.error);
+    loadImg("eye", img => {
         let m = 0;
         miis[n].eyes = [];
         for(let i = -0.05; i <= 0.05; i += 0.1) {
@@ -436,7 +481,7 @@ const loadMii = (mii, pos, commid) => {
             miis[n].eyes[m++] = eyeMesh;
         }
     }, undefined, console.error);
-    loadImg(`models/head/tex/tex_${215 + mii.eyebrowType}.png`, img => {
+    loadImg("eyebrow", img => {
         let m = 0;
         miis[n].eyebrows = [];
         for(let i = -0.05; i <= 0.05; i += 0.1) {
@@ -462,7 +507,7 @@ const loadMii = (mii, pos, commid) => {
             miis[n].eyebrows[m++] = eyebrowMesh;
         }
     }, undefined, console.error);
-    loadImg(`models/head/tex/tex_${347 + mii.noseType}.png`, img => {
+    loadImg("nose", img => {
         const scale = .1 * (1 + (mii.noseScale - 5) * 0.15);
         const nosePlane = new THREE.PlaneGeometry(scale, scale, 1, 1);
         const noseMaterial = new THREE.MeshBasicMaterial({
@@ -478,7 +523,7 @@ const loadMii = (mii, pos, commid) => {
         scene.add(noseMesh);
         miis[n].nose = noseMesh;
     }, undefined, console.error);
-    loadImg(`models/head/tex/tex_${289 + mii.mouthType}.png`, img => {
+    loadImg("mouth", img => {
         const scale = .1 * (1 + (mii.mouthScale - 4) * 0.15);
         const multSY = 1 + (mii.mouthHorizontalStretch - 3) * 0.17;
         const mouthPlane = new THREE.PlaneGeometry(scale, scale * multSY, 1, 1);
@@ -499,7 +544,7 @@ const loadMii = (mii, pos, commid) => {
         scene.add(mouthMesh);
         miis[n].mouth = mouthMesh;
     }, undefined, console.error);
-    loadImg(`models/head/tex/tex_${341 + mii.mustacheType}.png`, img => {
+    loadImg("mustache", img => {
         let m = 0;
         miis[n].mustache = [];
         for(let i = -0.05; i <= 0.05; i += 0.1) {
@@ -523,20 +568,7 @@ const loadMii = (mii, pos, commid) => {
             miis[n].mustache[m++] = mustacheMesh;
         }
     }, undefined, console.error);
-    if(mii.beardType != 0) 
-        loadGLTF(`models/head/mesh/shape_${mii.beardType < 4 ? 1 + mii.beardType : [574, 583][mii.beardType - 4]}.glb`, gltf => {
-            gltf.scene.scale.set(.008, .008, .008);
-            gltf.scene.position.x = pos.x;
-            gltf.scene.position.y = 1;
-            gltf.scene.position.z = pos.z - 0.1;
-            gltf.scene.rotation.y = Math.PI;
-            const material = new THREE.MeshStandardMaterial({ "color": hairColors[mii.facialHairColor] });
-            for(const child of gltf.scene.children)
-                child.material = material;
-            scene.add(gltf.scene);
-            miis[n].beard = gltf.scene;
-        }, undefined, console.error);
-        loadImg(`models/head/tex/tex_${267 + mii.glassesType}.png`, img => {
+    loadImg("glasses", img => {
         let m = 0;
         miis[n].glasses = [];
         const sizemult = (1 + (mii.glassesScale - 2) * 0.1);
@@ -562,7 +594,7 @@ const loadMii = (mii, pos, commid) => {
         }
     }, undefined, console.error);
     if(mii.moleEnabled)
-        loadImg(`models/head/tex/tex_${288}.png`, img => {
+        loadImg("mole", img => {
             const scale = .03 * (1 + (mii.moleScale - 4) * 0.15);
             const molePlane = new THREE.PlaneGeometry(scale, scale, 1, 1);
             const moleMaterial = new THREE.MeshBasicMaterial({
