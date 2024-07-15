@@ -661,7 +661,7 @@ const loadMii = (mii, pos, commid, prg) => {
                 .done();
             ctx.drawImage(
                 await createImageBitmap(fid1),
-                100 + (i - 100) * (1 + mii.eyeSpacing * .1) - fid1.width / 2,
+                100 + (i - 100) * (1 + mii.eyeSpacing * .2) - fid1.width / 2,
                 120 - (mii.eyeYPosition - 12) * 5 - fid1.height / 2
             );
         }
