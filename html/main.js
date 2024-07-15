@@ -684,7 +684,7 @@ const loadMii = (mii, pos, commid, prg) => {
             );
         }
         // Nose
-        const scaleNose = .2 * (1 + (mii.noseScale - 5) * 0.15);
+        const scaleNose = .2 * (1 + (mii.noseScale - 5) * 0.3);
         const tid3 = new TransformImageData(colorCorrectBWA(imgNose, 0, 0x000000ff));
         const fid3 = tid3
             .stretch(scaleNose, scaleNose)
@@ -692,7 +692,7 @@ const loadMii = (mii, pos, commid, prg) => {
         ctx.drawImage(
             await createImageBitmap(fid3),
             100 - fid3.width / 2,
-            130 - (mii.noseYPosition - 9) * 5 - fid3.height / 2
+            140 + (mii.noseYPosition - 9) * 5 - fid3.height / 2
         );
         // Mouth
         const scaleMouth = .2 * (1 + (mii.mouthScale - 4) * 0.15);
