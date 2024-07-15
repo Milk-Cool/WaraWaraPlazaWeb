@@ -727,7 +727,7 @@ const loadMii = (mii, pos, commid, prg) => {
             );
         }
         // Glasses
-        for(let i = 69; i <= 131; i += 62) {
+        for(let i = 70; i <= 130; i += 60) {
             const scaleGlasses = .2 * (1 + (mii.glassesScale - 2) * 0.15);
             // Transform Image Data
             const tid6 = new TransformImageData(colorCorrectBW(imgGlasses, 0x000000, glassesColors[mii.glassesColor]));
@@ -738,7 +738,7 @@ const loadMii = (mii, pos, commid, prg) => {
                 .done();
             ctx.drawImage(
                 await createImageBitmap(fid6),
-                i - fid6.width / 2,
+                100 + (i - 100) * scaleGlasses * 4 - fid6.width / 2,
                 120 - (mii.glassesYPosition - 10) * 5 - fid6.height / 2
             );
         }
