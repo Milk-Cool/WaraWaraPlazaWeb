@@ -87,13 +87,15 @@ function RoundedRectangle( w, h, r, s ) { // width, height, radius corner, smoot
 
 // ACTUAL CODE
 
+const miiPercent = 40;
+
 THREE.Cache.enabled = true;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xE4EFED);
 const MII_DEBUG = false;
 const ROT_DEBUG = false;
-const OPT_DEBUG = true;
+const OPT_DEBUG = false;
 const camera = new THREE.PerspectiveCamera(MII_DEBUG ? 15 : 75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const camAngle = .5;
 camera.position.z = 20 - Number(OPT_DEBUG) * 60;
@@ -1007,7 +1009,13 @@ waitForData().then(() => {
     prg.value = 0;
     for(const comm of data)
         for(const person of comm.people)
-            loadMii(person.mii, { "x": Math.random() * 100 - 50, "z": Math.random() * 70 - 35 }, comm.position - 1, prg);
+            if(Math.random() * 100 < miiPercent)
+                loadMii(person.mii, {
+                    "x": Math.random() * 100 - 50,
+                    "z": Math.random() * 70 - 35
+                }, comm.position - 1, prg);
+            else
+                prg.max--;
 });
 
 const animate = () => {
