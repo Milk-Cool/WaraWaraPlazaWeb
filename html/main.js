@@ -667,7 +667,7 @@ const loadMii = (mii, pos, commid, prg) => {
         }
         // Eyebrows
         for(let i = 80; i <= 120; i += 40) {
-            const scale = .2 * (1 + (mii.eyebrowScale - 4) * 0.15);
+            const scale = .2 * (1 + (mii.eyebrowScale - 4) * 0.5);
             const multSY = 1 + (mii.eyebrowVerticalStretch - 3) * 0.17;
             // Transform Image Data
             const tid2 = new TransformImageData(colorCorrectBWA(imgEyebrow, 0, hairColors[mii.eyebrowColor] * 0x100 + 0xff));
@@ -679,7 +679,7 @@ const loadMii = (mii, pos, commid, prg) => {
                 .done();
             ctx.drawImage(
                 await createImageBitmap(fid2),
-                100 + (i - 100) * (1 + mii.eyebrowSpacing * .1) - fid2.width / 2,
+                100 + (i - 100) * (1 + mii.eyebrowSpacing * .2) - fid2.width / 2,
                 90 - (mii.eyebrowYPosition - 12) * 5 - fid2.height / 2
             );
         }
