@@ -711,14 +711,14 @@ const loadMii = (mii, pos, commid, prg) => {
             170 + (mii.mouthYPosition - 13) * 5 - fid4.height / 2
         );
         // Mustache
-        for(let i = 87; i <= 112; i += 50) {
+        for(let i = 90; i <= 110; i += 20) {
             const scaleMustache = .2 * (1 + (mii.mustacheScale - 4) * 0.15);
             // Transform Image Data
             const tid5 = new TransformImageData(colorCorrectBWA(imgMustache, 0, hairColors[mii.facialHairColor] * 0x100 + 0xff));
-            if(i > 100) tid5.flip();
             // Finalized Image Data
             const fid5 = tid5
                 .stretch(scaleMustache, scaleMustache)
+                .flip(i > 100)
                 .done();
             ctx.drawImage(
                 await createImageBitmap(fid5),
