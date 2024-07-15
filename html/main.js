@@ -695,7 +695,7 @@ const loadMii = (mii, pos, commid, prg) => {
             140 + (mii.noseYPosition - 9) * 5 - fid3.height / 2
         );
         // Mouth
-        const scaleMouth = .2 * (1 + (mii.mouthScale - 4) * 0.15);
+        const scaleMouth = .2 * (1 + (mii.mouthScale - 4) * 0.4);
         const multSYMouth = 1 + (mii.mouthHorizontalStretch - 3) * 0.17;
         const tid4 = new TransformImageData(colorCorrect(imgMouth, mouthColors[mii.mouthColor],
             Math.floor(mouthColors[mii.mouthColor] / 65536) * 0.8 * 65536
