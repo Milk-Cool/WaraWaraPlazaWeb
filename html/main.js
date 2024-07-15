@@ -913,7 +913,7 @@ const loadMii = (mii, pos, commid, prg) => {
             miis[n].glasses[m++] = glassesMesh;
         }
     }, undefined, console.error);*/
-    if(mii.moleEnabled)
+    /*if(mii.moleEnabled)
         loadImg("mole", img => {
             const scale = .03 * (1 + (mii.moleScale - 4) * 0.15);
             const molePlane = new THREE.PlaneGeometry(scale, scale, 1, 1);
@@ -929,7 +929,7 @@ const loadMii = (mii, pos, commid, prg) => {
             // moleMesh.material.side = THREE.DoubleSide;
             scene.add(moleMesh);
             miis[n].mole = moleMesh;
-        }, undefined, console.error);
+        }, undefined, console.error);*/
 }
 
 for(const position of positions) {
