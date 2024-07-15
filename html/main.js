@@ -95,9 +95,10 @@ const MII_DEBUG = false;
 const ROT_DEBUG = false;
 const OPT_DEBUG = true;
 const camera = new THREE.PerspectiveCamera(MII_DEBUG ? 15 : 75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camAngle = .5;
 camera.position.z = 20 - Number(OPT_DEBUG) * 60;
 camera.position.y = 10;
-camera.rotation.x = -.5;
+camera.rotation.x = -camAngle;
 
 // Controls
 const held = {
@@ -139,8 +140,8 @@ setInterval(() => {
     if(held.right) camera.position.x += .1;
     if(held.forward) camera.position.z -= .1;
     if(held.backward) camera.position.z += .1;
-    if(held.zoom_in) camera.fov -= .1;
-    if(held.zoom_out) camera.fov += .1;
+    if(held.zoom_in) {camera.position.z -= .1; camera.position.y -= Math.tan(camAngle) * .1}
+    if(held.zoom_out) {camera.position.z += .1; camera.position.y += Math.tan(camAngle) * .1}
     camera.updateProjectionMatrix();
 }, 1);
 
@@ -578,15 +579,25 @@ class TransformImageData {
 const loadMii = (mii, pos, commid, prg) => {
     miis.push({});
     const n = miis.length - 1;
-    loadGLTF(mii.gender ? "models/body/Female.gltf" : "models/body/Male.gltf", gltf => {
-        gltf.scene.position.x = pos.x;
-        gltf.scene.position.y = 0;
-        gltf.scene.position.z = pos.z;	
-        scene.add(gltf.scene);
-        const color = favoriteColors[mii.favoriteColor];
-        const material = new THREE.MeshBasicMaterial({ "color": color });
-        gltf.scene.children[mii.gender ? 1 : 0].material = material;
-        miis[n].body = gltf.scene;
+    chainLoad(loadGLTF, [1, 2, 3, 4].map(
+        x => mii.gender ? `models/body/Female${x}.gltf` : `models/body/Male${x}.gltf`
+    ), gltfs => {
+        for(const gltfi in gltfs) {
+            const gltf = gltfs[gltfi];
+            const color = favoriteColors[mii.favoriteColor];
+            const material = new THREE.MeshBasicMaterial({ "color": color });
+            gltf.scene.children[mii.gender ? 1 : 0].material = material;
+            gltfs[gltfi] = gltf;
+        }
+        const geometry = gltfs.map((x, i) => [x.scene, i * 3]);
+        const lod = new THREE.LOD();
+        for(const geom of geometry)
+            lod.addLevel(...geom);
+        lod.position.x = pos.x;
+        lod.position.y = 0;
+        lod.position.z = pos.z;
+        scene.add(lod);
+        miis[n].body = lod;
     }, undefined, console.error);
     loadGLTF(`models/head/mesh/shape_${268 + mii.faceType}.glb`, gltf => {
         gltf.scene.scale.set(.008, .008, .008);
