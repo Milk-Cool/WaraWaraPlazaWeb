@@ -649,7 +649,7 @@ const loadMii = (mii, pos, commid, prg) => {
 
         // Eyes
         for(let i = 80; i <= 120; i += 40) {
-            const scale = .2 * (1 + (mii.eyeScale - 4) * 0.15);
+            const scale = .2 * (1 + (mii.eyeScale - 4) * 0.5);
             const multSY = 1 + (mii.eyeVerticalStretch - 3) * 0.17;
             // Transform Image Data
             const tid1 = new TransformImageData(colorCorrect(imgEye, 0, 0xffffff, eyeColors[mii.eyeColor]));
