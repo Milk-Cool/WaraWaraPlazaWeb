@@ -708,7 +708,7 @@ const loadMii = (mii, pos, commid, prg) => {
         ctx.drawImage(
             await createImageBitmap(fid4),
             100 - fid4.width / 2,
-            160 - (mii.mouthYPosition - 13) * 5 - fid4.height / 2
+            170 + (mii.mouthYPosition - 13) * 5 - fid4.height / 2
         );
         // Mustache
         for(let i = 87; i <= 112; i += 50) {
