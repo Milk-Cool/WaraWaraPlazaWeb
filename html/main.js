@@ -770,7 +770,7 @@ const loadMii = (mii, pos, commid, prg) => {
         }
 
         // Let's render it now!
-        const facePlane = new THREE.PlaneGeometry(.5, .5, 1, 1);
+        const facePlane = new THREE.PlaneGeometry(.66, .66, 1, 1);
         const faceMaterial = new THREE.MeshBasicMaterial({
             "map": new THREE.CanvasTexture(canvas),
             "shading": THREE.FlatShading,
