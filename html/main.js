@@ -587,6 +587,8 @@ const loadMii = (mii, pos, commid, prg) => {
     miis[n].commid = commid;
     miis[n].maxStage = mii.beardType == 0 ? 4 : 5;
     miis[n].stage = 0;
+
+    const onerr = e => { miis[n].stage++; console.error(e); }
     chainLoad(loadGLTF, [1, 2, 3, 4].map(
         x => mii.gender ? `models/body/Female${x}.gltf` : `models/body/Male${x}.gltf`
     ), gltfs => {
@@ -607,7 +609,7 @@ const loadMii = (mii, pos, commid, prg) => {
         scene.add(lod);
         miis[n].body = lod;
         miis[n].stage++;
-    }, undefined, console.error);
+    }, undefined, onerr);
     loadGLTF(`models/head/mesh/shape_${268 + mii.faceType}.glb`, gltf => {
         gltf.scene.scale.set(.008, .008, .008);
         gltf.scene.position.x = pos.x;
@@ -619,7 +621,7 @@ const loadMii = (mii, pos, commid, prg) => {
         scene.add(gltf.scene);
         miis[n].head = gltf.scene;
         miis[n].stage++;
-    }, undefined, console.error);
+    }, undefined, onerr);
     loadGLTF(`models/head/mesh/shape_${329 + mii.hairType}.glb`, gltf => {
         gltf.scene.scale.set(.008, .008, .008);
         gltf.scene.position.x = pos.x;
@@ -631,7 +633,7 @@ const loadMii = (mii, pos, commid, prg) => {
         scene.add(gltf.scene);
         miis[n].hair = gltf.scene;
         miis[n].stage++;
-    }, undefined, console.error);
+    }, undefined, onerr);
     if(mii.beardType != 0) 
         loadGLTF(`models/head/mesh/shape_${mii.beardType < 4 ? 1 + mii.beardType : [574, 583][mii.beardType - 4]}.glb`, gltf => {
             gltf.scene.scale.set(.008, .008, .008);
@@ -645,7 +647,7 @@ const loadMii = (mii, pos, commid, prg) => {
             scene.add(gltf.scene);
             miis[n].beard = gltf.scene;
             miis[n].stage++;
-        }, undefined, console.error);
+        }, undefined, onerr);
     chainLoad(loadImg, [
         `models/head/tex/tex_${135 + mii.eyeType}.png`, // [0] eyes
         `models/head/tex/tex_${215 + mii.eyebrowType}.png`, // [1] eyebrows
@@ -798,7 +800,7 @@ const loadMii = (mii, pos, commid, prg) => {
         prg.value++;
         if(prg.value == prg.max) prg.style.display = "none";
         miis[n].stage++;
-    }, undefined, console.error);
+    }, undefined, onerr);
 }
 
 for(const position of positions) {
