@@ -857,6 +857,7 @@ waitForData().then(() => {
 
 const imgLoader = new THREE.TextureLoader();
 
+const minDist = 1;
 const speed = 0.02;
 /** @brief Makes Miis walk towards their communities. */
 const walk = () => {
@@ -873,6 +874,44 @@ const walk = () => {
             dz = speed * Math.min(1, (positions[mii.commid][1] - mii.pos.z) / 10);
         else
             dz = speed * -Math.min(1, (mii.pos.z - positions[mii.commid][1]) / 10);
+
+        for(let j = 0; j < miis.length; j++) {
+            if(i == j) continue;
+            const mii2 = miis[j];
+            if(mii2.stage != mii2.maxStage) continue;
+
+            const dist = Math.hypot(mii2.pos.x - mii.pos.x - dx, mii2.pos.z - mii.pos.z - dz);
+            if(dist < minDist) {
+                const center = {
+                    "x": (mii.pos.x + dx + mii2.pos.x) / 2,
+                    "z": (mii.pos.z + dz + mii2.pos.z) / 2
+                };
+                const ang1 = Math.atan2(mii.pos.z - center.z, mii.pos.x - center.x);
+                const ang2 = Math.atan2(mii2.pos.z - center.z, mii2.pos.x - center.x);
+
+                const conv = x => x * (minDist - dist) / 2;
+                
+                const ax = conv(Math.cos(ang2)), az = conv(Math.sin(ang2));
+                for(const k of [
+                    "face",
+                    "hair",
+                    "head",
+                    "beard",
+                    "body"
+                ]) {
+                    if(!(k in mii2)) continue;
+                    mii2[k].position.x += ax;
+                    mii2[k].position.z += az;
+                }
+        
+                mii2.pos.x += ax;
+                mii2.pos.z += az;
+
+                dx += conv(Math.cos(ang1)), conv(Math.sin(ang1));
+            }
+
+            miis[j] = mii2;
+        }
 
         for(const j of [
             "face",
