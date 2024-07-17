@@ -581,6 +581,12 @@ class TransformImageData {
 const loadMii = (mii, pos, commid, prg) => {
     miis.push({});
     const n = miis.length - 1;
+
+    miis[n].animationFrame = 0;
+    miis[n].pos = pos;
+    miis[n].commid = commid;
+    miis[n].maxStage = mii.beardType == 0 ? 4 : 5;
+    miis[n].stage = 0;
     chainLoad(loadGLTF, [1, 2, 3, 4].map(
         x => mii.gender ? `models/body/Female${x}.gltf` : `models/body/Male${x}.gltf`
     ), gltfs => {
@@ -600,6 +606,7 @@ const loadMii = (mii, pos, commid, prg) => {
         lod.position.z = pos.z;
         scene.add(lod);
         miis[n].body = lod;
+        miis[n].stage++;
     }, undefined, console.error);
     loadGLTF(`models/head/mesh/shape_${268 + mii.faceType}.glb`, gltf => {
         gltf.scene.scale.set(.008, .008, .008);
@@ -611,6 +618,7 @@ const loadMii = (mii, pos, commid, prg) => {
             child.material = material;
         scene.add(gltf.scene);
         miis[n].head = gltf.scene;
+        miis[n].stage++;
     }, undefined, console.error);
     loadGLTF(`models/head/mesh/shape_${329 + mii.hairType}.glb`, gltf => {
         gltf.scene.scale.set(.008, .008, .008);
@@ -622,6 +630,7 @@ const loadMii = (mii, pos, commid, prg) => {
             child.material = material;
         scene.add(gltf.scene);
         miis[n].hair = gltf.scene;
+        miis[n].stage++;
     }, undefined, console.error);
     if(mii.beardType != 0) 
         loadGLTF(`models/head/mesh/shape_${mii.beardType < 4 ? 1 + mii.beardType : [574, 583][mii.beardType - 4]}.glb`, gltf => {
@@ -635,6 +644,7 @@ const loadMii = (mii, pos, commid, prg) => {
                 child.material = material;
             scene.add(gltf.scene);
             miis[n].beard = gltf.scene;
+            miis[n].stage++;
         }, undefined, console.error);
     chainLoad(loadImg, [
         `models/head/tex/tex_${135 + mii.eyeType}.png`, // [0] eyes
@@ -787,6 +797,7 @@ const loadMii = (mii, pos, commid, prg) => {
 
         prg.value++;
         if(prg.value == prg.max) prg.style.display = "none";
+        miis[n].stage++;
     }, undefined, console.error);
 }
 
@@ -846,6 +857,43 @@ waitForData().then(() => {
 
 const imgLoader = new THREE.TextureLoader();
 
+const speed = 0.02;
+/** @brief Makes Miis walk towards their communities. */
+const walk = () => {
+    for(let i = 0; i < miis.length; i++) {
+        const mii = miis[i];
+        if(mii.stage != mii.maxStage) continue;
+        
+        let dx = 0, dz = 0;
+        if(positions[mii.commid][0] > mii.pos.x)
+            dx = speed * Math.min(1, (positions[mii.commid][0] - mii.pos.x) / 10);
+        else
+            dx = speed * -Math.min(1, (mii.pos.x - positions[mii.commid][0]) / 10);
+        if(positions[mii.commid][1] > mii.pos.z)
+            dz = speed * Math.min(1, (positions[mii.commid][1] - mii.pos.z) / 10);
+        else
+            dz = speed * -Math.min(1, (mii.pos.z - positions[mii.commid][1]) / 10);
+
+        for(const j of [
+            "face",
+            "hair",
+            "head",
+            "beard",
+            "body"
+        ]) {
+            if(!(j in mii)) continue;
+            mii[j].position.x += dx;
+            mii[j].position.z += dz;
+        }
+
+        mii.pos.x += dx;
+        mii.pos.z += dz;
+
+        mii.animationFrame++;
+        miis[i] = mii;
+    }
+}
+
 waitForData().then(() => {
     if(ROT_DEBUG) return;
     const amt = data.reduce((a, b) => a + b.people.length, 0);
@@ -861,6 +909,7 @@ waitForData().then(() => {
                 }, comm.position - 1, prg);
             else
                 prg.max--;
+    setInterval(walk, 1000 / 60);
 });
 
 const animate = () => {
