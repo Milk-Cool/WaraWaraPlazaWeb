@@ -877,6 +877,7 @@ const speed = 0.02;
 /** @brief Makes Miis walk towards their communities. */
 const walk = () => {
     for(let i = 0; i < miis.length; i++) {
+        /** @type {{ gr: THREE.Group, pos: { x: number, z: number } }} */
         const mii = miis[i];
         if(mii.gr === null) continue;
         
@@ -892,6 +893,7 @@ const walk = () => {
 
         for(let j = 0; j < miis.length; j++) {
             if(i == j) continue;
+            /** @type {{ gr: THREE.Group, pos: { x: number, z: number } }} */
             const mii2 = miis[j];
             if(mii2.gr === null) continue;
 
