@@ -455,7 +455,6 @@ class TransformImageData {
     }
 
     /**
-     * @private
      * Rotates a point around another point.
      * 
      * @param {number} x1 Point 1 X pos
@@ -587,8 +586,22 @@ const loadMii = (mii, pos, commid, prg) => {
     miis[n].commid = commid;
     miis[n].maxStage = mii.beardType == 0 ? 4 : 5;
     miis[n].stage = 0;
+    miis[n].gr = null;
 
     const onerr = e => { miis[n].stage++; console.error(e); }
+    const crgr = () => {
+        if(miis[n].stage != miis[n].maxStage) return;
+        miis[n].gr = new THREE.Group();
+        for(const i of [
+            "face",
+            "hair",
+            "head",
+            "beard",
+            "body"
+        ])
+            if(i in miis[n]) miis[n].gr.add(miis[n][i]);
+        scene.add(miis[n].gr);
+    };
     chainLoad(loadGLTF, [1, 2, 3, 4].map(
         x => mii.gender ? `models/body/Female${x}.gltf` : `models/body/Male${x}.gltf`
     ), gltfs => {
@@ -606,9 +619,9 @@ const loadMii = (mii, pos, commid, prg) => {
         lod.position.x = pos.x;
         lod.position.y = 0;
         lod.position.z = pos.z;
-        scene.add(lod);
         miis[n].body = lod;
         miis[n].stage++;
+        crgr();
     }, undefined, onerr);
     loadGLTF(`models/head/mesh/shape_${268 + mii.faceType}.glb`, gltf => {
         gltf.scene.scale.set(.008, .008, .008);
@@ -618,9 +631,9 @@ const loadMii = (mii, pos, commid, prg) => {
         const material = new THREE.MeshBasicMaterial({ "color": skinColors[mii.skinColor] });
         for(const child of gltf.scene.children)
             child.material = material;
-        scene.add(gltf.scene);
         miis[n].head = gltf.scene;
         miis[n].stage++;
+        crgr();
     }, undefined, onerr);
     loadGLTF(`models/head/mesh/shape_${329 + mii.hairType}.glb`, gltf => {
         gltf.scene.scale.set(.008, .008, .008);
@@ -630,9 +643,9 @@ const loadMii = (mii, pos, commid, prg) => {
         const material = new THREE.MeshBasicMaterial({ "color": hairColors[mii.hairColor] });
         for(const child of gltf.scene.children)
             child.material = material;
-        scene.add(gltf.scene);
         miis[n].hair = gltf.scene;
         miis[n].stage++;
+        crgr();
     }, undefined, onerr);
     if(mii.beardType != 0) 
         loadGLTF(`models/head/mesh/shape_${mii.beardType < 4 ? 1 + mii.beardType : [574, 583][mii.beardType - 4]}.glb`, gltf => {
@@ -644,9 +657,9 @@ const loadMii = (mii, pos, commid, prg) => {
             const material = new THREE.MeshStandardMaterial({ "color": hairColors[mii.facialHairColor] });
             for(const child of gltf.scene.children)
                 child.material = material;
-            scene.add(gltf.scene);
             miis[n].beard = gltf.scene;
             miis[n].stage++;
+            crgr();
         }, undefined, onerr);
     chainLoad(loadImg, [
         `models/head/tex/tex_${135 + mii.eyeType}.png`, // [0] eyes
@@ -792,7 +805,6 @@ const loadMii = (mii, pos, commid, prg) => {
         faceMesh.position.x = pos.x;
         faceMesh.position.y = 1.5;
         faceMesh.position.z = pos.z + .2;
-        scene.add(faceMesh);
         miis[n].face = faceMesh;
 
         canvas.remove();
@@ -800,6 +812,7 @@ const loadMii = (mii, pos, commid, prg) => {
         prg.value++;
         if(prg.value == prg.max) prg.style.display = "none";
         miis[n].stage++;
+        crgr();
     }, undefined, onerr);
 }
 
@@ -865,7 +878,7 @@ const speed = 0.02;
 const walk = () => {
     for(let i = 0; i < miis.length; i++) {
         const mii = miis[i];
-        if(mii.stage != mii.maxStage) continue;
+        if(mii.gr === null) continue;
         
         let dx = 0, dz = 0;
         if(positions[mii.commid][0] > mii.pos.x)
@@ -880,7 +893,7 @@ const walk = () => {
         for(let j = 0; j < miis.length; j++) {
             if(i == j) continue;
             const mii2 = miis[j];
-            if(mii2.stage != mii2.maxStage) continue;
+            if(mii2.gr === null) continue;
 
             const dist = Math.hypot(mii2.pos.x - mii.pos.x - dx, mii2.pos.z - mii.pos.z - dz);
             if(dist < minDist) {
@@ -894,38 +907,22 @@ const walk = () => {
                 const conv = x => x * (minDist - dist) / 2;
                 
                 const ax = conv(Math.cos(ang2)), az = conv(Math.sin(ang2));
-                for(const k of [
-                    "face",
-                    "hair",
-                    "head",
-                    "beard",
-                    "body"
-                ]) {
-                    if(!(k in mii2)) continue;
-                    mii2[k].position.x += ax;
-                    mii2[k].position.z += az;
-                }
+
+                mii2.gr.position.x += ax;
+                mii2.gr.position.z += az;
         
                 mii2.pos.x += ax;
                 mii2.pos.z += az;
 
-                dx += conv(Math.cos(ang1)), conv(Math.sin(ang1));
+                dx += conv(Math.cos(ang1)), dz += conv(Math.sin(ang1));
             }
 
             miis[j] = mii2;
         }
 
-        for(const j of [
-            "face",
-            "hair",
-            "head",
-            "beard",
-            "body"
-        ]) {
-            if(!(j in mii)) continue;
-            mii[j].position.x += dx;
-            mii[j].position.z += dz;
-        }
+        // mii.gr.rotation.y = (Math.atan2(dz, dx) + Math.PI) % (2 * Math.PI);
+        mii.gr.position.x += dx;
+        mii.gr.position.z += dz;
 
         mii.pos.x += dx;
         mii.pos.z += dz;
